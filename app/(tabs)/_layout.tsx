@@ -12,6 +12,12 @@ export default function TabLayout() {
       label: 'Feed',
     },
     {
+      name: 'reels',
+      route: '/(tabs)/reels',
+      icon: 'play-circle',
+      label: 'Reels',
+    },
+    {
       name: 'drops',
       route: '/(tabs)/drops',
       icon: 'local-fire-department',
@@ -46,6 +52,7 @@ export default function TabLayout() {
         }}
       >
         <Stack.Screen key="home" name="(home)" />
+        <Stack.Screen key="reels" name="reels" />
         <Stack.Screen key="drops" name="drops" />
         <Stack.Screen key="collection" name="collection" />
         <Stack.Screen key="marketplace" name="marketplace" />
