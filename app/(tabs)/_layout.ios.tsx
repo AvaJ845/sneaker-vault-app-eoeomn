@@ -11,6 +11,10 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+        },
       }}
     >
       <Tabs.Screen
@@ -23,20 +27,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="drops"
+        options={{
+          title: 'Drops',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol ios_icon_name="flame.fill" android_material_icon_name="local-fire-department" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="collection"
         options={{
           title: 'Collection',
           tabBarIcon: ({ color }) => (
             <IconSymbol ios_icon_name="square.grid.2x2.fill" android_material_icon_name="grid-view" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="upload"
-        options={{
-          title: 'Upload',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="plus.circle.fill" android_material_icon_name="add-circle" size={32} color={color} />
           ),
         }}
       />

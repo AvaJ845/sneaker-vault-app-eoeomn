@@ -1,42 +1,77 @@
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
+// Sneaker culture-inspired color palette - smooth, modern, streetwear vibes
 export const colors = {
-  background: '#F5F5F5',
-  text: '#212121',
-  textSecondary: '#757575',
-  primary: '#1976D2',
-  secondary: '#4CAF50',
-  accent: '#FFC107',
-  card: '#FFFFFF',
-  highlight: '#BBDEFB',
-  border: '#E0E0E0',
-  error: '#F44336',
-  success: '#4CAF50',
+  // Dark mode primary (main background)
+  background: '#0A0A0A',
+  backgroundSecondary: '#141414',
+  
+  // Card and surface colors
+  card: '#1A1A1A',
+  cardElevated: '#222222',
+  
+  // Text colors
+  text: '#FFFFFF',
+  textSecondary: '#A0A0A0',
+  textTertiary: '#666666',
+  
+  // Accent colors - inspired by sneaker colorways
+  primary: '#FF6B35', // Vibrant orange (like Nike's signature)
+  secondary: '#00D9FF', // Electric blue
+  accent: '#FFE66D', // Highlight yellow
+  
+  // Status colors
+  success: '#4ECCA3',
+  error: '#FF6B6B',
+  warning: '#FFD93D',
+  
+  // Border and divider
+  border: '#2A2A2A',
+  divider: '#333333',
+  
+  // Special effects
+  overlay: 'rgba(0, 0, 0, 0.7)',
+  shimmer: 'rgba(255, 255, 255, 0.1)',
+  
+  // Gradient colors for premium feel
+  gradientStart: '#FF6B35',
+  gradientEnd: '#FF8E53',
+  
+  // Light mode (for users who prefer it)
+  lightBackground: '#F5F5F5',
+  lightCard: '#FFFFFF',
+  lightText: '#0A0A0A',
+  lightTextSecondary: '#666666',
+  lightBorder: '#E0E0E0',
 };
 
 export const buttonStyles = StyleSheet.create({
   primary: {
     backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: '0px 4px 12px rgba(255, 107, 53, 0.3)',
+    elevation: 4,
   },
   secondary: {
     backgroundColor: colors.secondary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    boxShadow: '0px 4px 12px rgba(0, 217, 255, 0.3)',
+    elevation: 4,
   },
   accent: {
     backgroundColor: colors.accent,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -44,9 +79,17 @@ export const buttonStyles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderWidth: 2,
     borderColor: colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ghost: {
+    backgroundColor: colors.shimmer,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -72,16 +115,18 @@ export const commonStyles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '900',
     color: colors.text,
     marginBottom: 8,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 8,
+    letterSpacing: -0.3,
   },
   text: {
     fontSize: 16,
@@ -102,11 +147,23 @@ export const commonStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-    elevation: 3,
+    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.4)',
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cardElevated: {
+    backgroundColor: colors.cardElevated,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    boxShadow: '0px 6px 20px rgba(0, 0, 0, 0.5)',
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   row: {
     flexDirection: 'row',
@@ -116,5 +173,16 @@ export const commonStyles = StyleSheet.create({
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  badge: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  badgeText: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

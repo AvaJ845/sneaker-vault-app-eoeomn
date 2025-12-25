@@ -72,7 +72,7 @@ export function PostCard({ post, onLike, onComment, onShare, onUserPress }: Post
               ios_icon_name={isLiked ? 'heart.fill' : 'heart'}
               android_material_icon_name={isLiked ? 'favorite' : 'favorite-border'}
               size={28}
-              color={isLiked ? '#FF3B30' : colors.text}
+              color={isLiked ? colors.primary : colors.text}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => onComment(post.id)} style={styles.actionButton}>
@@ -109,6 +109,8 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.card,
     marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   header: {
     flexDirection: 'row',
@@ -125,10 +127,12 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: colors.border,
   },
   username: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
   },
   sneakerInfo: {
@@ -139,7 +143,7 @@ const styles = StyleSheet.create({
   image: {
     width: width,
     height: width,
-    backgroundColor: colors.border,
+    backgroundColor: colors.backgroundSecondary,
   },
   actions: {
     flexDirection: 'row',
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
   },
   likes: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     marginBottom: 4,
   },
