@@ -30,16 +30,16 @@ export default function TabLayout() {
       label: 'Vault',
     },
     {
-      name: 'marketplace',
-      route: '/(tabs)/marketplace',
-      icon: 'price-tag',
-      label: 'Market',
+      name: 'wishlist',
+      route: '/(tabs)/wishlist',
+      icon: 'star',
+      label: 'Wishlist',
     },
     {
-      name: 'profile',
-      route: '/(tabs)/profile',
-      icon: 'profile',
-      label: 'Profile',
+      name: 'analytics',
+      route: '/(tabs)/analytics',
+      icon: 'chart',
+      label: 'Analytics',
     },
   ];
 
@@ -56,6 +56,8 @@ export default function TabLayout() {
         <Stack.Screen key="drops" name="drops" />
         <Stack.Screen key="database" name="database" />
         <Stack.Screen key="collection" name="collection" />
+        <Stack.Screen key="wishlist" name="wishlist" />
+        <Stack.Screen key="analytics" name="analytics" />
         <Stack.Screen key="marketplace" name="marketplace" />
         <Stack.Screen key="profile" name="profile" />
       </Stack>

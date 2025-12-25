@@ -9,6 +9,7 @@ import {
   SneakerRotateIcon,
   VaultIcon
 } from '@/components/CustomIcons';
+import { IconSymbol } from '@/components/IconSymbol';
 
 // Try to import Tabs with error handling
 let Tabs: any;
@@ -82,6 +83,34 @@ export default function TabLayout() {
           title: 'Vault',
           tabBarIcon: ({ color }: { color: string }) => (
             <VaultIcon size={26} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          title: 'Wishlist',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol
+              ios_icon_name="star"
+              android_material_icon_name="star-border"
+              size={26}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol
+              ios_icon_name="chart.bar.xaxis"
+              android_material_icon_name="bar-chart"
+              size={26}
+              color={color}
+            />
           ),
         }}
       />

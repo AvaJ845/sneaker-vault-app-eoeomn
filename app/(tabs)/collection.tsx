@@ -1,94 +1,118 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
+import { supabase } from '@/lib/supabase';
+import EnhancedSneakerDetailModal from '@/components/EnhancedSneakerDetailModal';
+import { router } from 'expo-router';
 
-interface CollectionItem {
+interface CollectionItemDisplay {
   id: string;
+  sneaker_id: string;
   brand: string;
   model: string;
   imageUrl: string;
   purchasePrice: number;
   currentValue: number;
   isVerified?: boolean;
+  wear_count: number;
 }
 
-const mockCollection: CollectionItem[] = [
-  {
-    id: '1',
-    brand: 'Nike',
-    model: 'Air Jordan 1 Retro High',
-    imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop',
-    purchasePrice: 170,
-    currentValue: 450,
-    isVerified: true,
-  },
-  {
-    id: '2',
-    brand: 'Adidas',
-    model: 'Yeezy Boost 350 V2',
-    imageUrl: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=400&h=400&fit=crop',
-    purchasePrice: 220,
-    currentValue: 380,
-    isVerified: false,
-  },
-  {
-    id: '3',
-    brand: 'Nike',
-    model: 'Air Max 90',
-    imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
-    purchasePrice: 130,
-    currentValue: 150,
-    isVerified: true,
-  },
-  {
-    id: '4',
-    brand: 'New Balance',
-    model: '990v5',
-    imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=400&fit=crop',
-    purchasePrice: 185,
-    currentValue: 200,
-    isVerified: false,
-  },
-];
-
 export default function CollectionScreen() {
-  const [collection, setCollection] = useState<CollectionItem[]>(mockCollection);
+  const [collection, setCollection] = useState<CollectionItemDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  useEffect(() => {
+    loadCollection();
+  }, []);
+
+  const loadCollection = async () => {
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found');
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('user_collections')
+        .select(`
+          id,
+          sneaker_id,
+          purchase_price,
+          wear_count,
+          sneakers (
+            id,
+            brand,
+            model,
+            image_url,
+            estimated_value
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error loading collection:', error);
+        setLoading(false);
+        return;
+      }
+
+      const formattedCollection: CollectionItemDisplay[] = (data || []).map((item: any) => ({
+        id: item.id,
+        sneaker_id: item.sneaker_id,
+        brand: item.sneakers?.brand || 'Unknown',
+        model: item.sneakers?.model || 'Unknown',
+        imageUrl: item.sneakers?.image_url || 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop',
+        purchasePrice: item.purchase_price || 0,
+        currentValue: item.sneakers?.estimated_value || 0,
+        isVerified: false,
+        wear_count: item.wear_count || 0,
+      }));
+
+      setCollection(formattedCollection);
+    } catch (error) {
+      console.error('Error loading collection:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalValue = collection.reduce((sum, item) => sum + item.currentValue, 0);
   const totalInvestment = collection.reduce((sum, item) => sum + item.purchasePrice, 0);
   const totalGain = totalValue - totalInvestment;
-  const gainPercentage = ((totalGain / totalInvestment) * 100).toFixed(1);
+  const gainPercentage = totalInvestment > 0 ? ((totalGain / totalInvestment) * 100).toFixed(1) : '0.0';
 
-  const handleVerify = (itemId: string) => {
-    console.log('Verify item:', itemId);
-    Alert.alert(
-      'Blockchain Verification',
-      'Verify your sneaker authenticity on the XRP Ledger blockchain.\n\nThis feature requires:\n• Supabase backend connection\n• XRP Ledger integration\n• NFT minting capability\n\nWould you like to proceed?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Learn More', onPress: () => console.log('Learn more about verification') },
-        { text: 'Verify Now', onPress: () => {
-          Alert.alert('Coming Soon', 'Blockchain verification will be available soon. Enable Supabase to get started!');
-        }},
-      ]
-    );
-  };
-
-  const renderItem = ({ item }: { item: CollectionItem }) => {
+  const renderItem = ({ item }: { item: CollectionItemDisplay }) => {
     const gain = item.currentValue - item.purchasePrice;
-    const gainPercent = ((gain / item.purchasePrice) * 100).toFixed(1);
+    const gainPercent = item.purchasePrice > 0 ? ((gain / item.purchasePrice) * 100).toFixed(1) : '0.0';
     const isPositive = gain >= 0;
 
     return (
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => {
+          setSelectedItemId(item.id);
+          setModalVisible(true);
+        }}
+      >
         <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
         
         {item.isVerified && (
           <View style={styles.verifiedBadge}>
             <IconSymbol ios_icon_name="checkmark.seal.fill" android_material_icon_name="verified" size={20} color={colors.secondary} />
+          </View>
+        )}
+
+        {item.wear_count > 0 && (
+          <View style={styles.wearBadge}>
+            <IconSymbol ios_icon_name="figure.walk" android_material_icon_name="directions-walk" size={12} color={colors.text} />
+            <Text style={styles.wearText}>{item.wear_count}x</Text>
           </View>
         )}
 
@@ -104,20 +128,13 @@ export default function CollectionScreen() {
             </View>
             <View style={styles.gainContainer}>
               <Text style={[styles.gain, isPositive ? styles.gainPositive : styles.gainNegative]}>
-                {isPositive ? '+' : ''}${gain}
+                {isPositive ? '+' : ''}${Math.abs(gain)}
               </Text>
               <Text style={[styles.gainPercent, isPositive ? styles.gainPositive : styles.gainNegative]}>
                 ({isPositive ? '+' : ''}{gainPercent}%)
               </Text>
             </View>
           </View>
-
-          {!item.isVerified && (
-            <TouchableOpacity style={styles.verifyButton} onPress={() => handleVerify(item.id)}>
-              <IconSymbol ios_icon_name="checkmark.shield" android_material_icon_name="verified-user" size={14} color={colors.primary} />
-              <Text style={styles.verifyText}>Verify on Blockchain</Text>
-            </TouchableOpacity>
-          )}
         </View>
       </TouchableOpacity>
     );
@@ -128,7 +145,7 @@ export default function CollectionScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>My Collection</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={() => router.push('/(tabs)/database')}>
             <IconSymbol ios_icon_name="plus.circle.fill" android_material_icon_name="add-circle" size={32} color={colors.primary} />
           </TouchableOpacity>
         </View>
@@ -141,13 +158,13 @@ export default function CollectionScreen() {
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Total Value</Text>
-            <Text style={styles.statValue}>${totalValue}</Text>
+            <Text style={styles.statValue}>${totalValue.toLocaleString()}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Total Gain</Text>
             <Text style={[styles.statValue, totalGain >= 0 ? styles.gainPositive : styles.gainNegative]}>
-              {totalGain >= 0 ? '+' : ''}${totalGain}
+              {totalGain >= 0 ? '+' : ''}${Math.abs(totalGain).toLocaleString()}
             </Text>
             <Text style={[styles.statPercent, totalGain >= 0 ? styles.gainPositive : styles.gainNegative]}>
               ({totalGain >= 0 ? '+' : ''}{gainPercentage}%)
@@ -155,19 +172,54 @@ export default function CollectionScreen() {
           </View>
         </View>
 
-        <FlatList
-          data={collection}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={[
-            styles.listContent,
-            Platform.OS !== 'ios' && styles.listContentWithTabBar,
-          ]}
-          showsVerticalScrollIndicator={false}
-        />
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading collection...</Text>
+          </View>
+        ) : collection.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <IconSymbol
+              ios_icon_name="shippingbox"
+              android_material_icon_name="inventory"
+              size={64}
+              color={colors.textSecondary}
+            />
+            <Text style={styles.emptyText}>Your collection is empty</Text>
+            <Text style={styles.emptySubtext}>
+              Browse the database and add sneakers to your vault
+            </Text>
+            <TouchableOpacity
+              style={styles.browseButton}
+              onPress={() => router.push('/(tabs)/database')}
+            >
+              <Text style={styles.browseButtonText}>Browse Database</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={collection}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={[
+              styles.listContent,
+              Platform.OS !== 'ios' && styles.listContentWithTabBar,
+            ]}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
+
+      <EnhancedSneakerDetailModal
+        visible={modalVisible}
+        collectionItemId={selectedItemId}
+        onClose={() => {
+          setModalVisible(false);
+          setSelectedItemId(null);
+          loadCollection();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -233,6 +285,45 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 2,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  browseButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    marginTop: 24,
+  },
+  browseButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+  },
   listContent: {
     paddingHorizontal: 12,
     paddingBottom: 20,
@@ -267,6 +358,23 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 4,
   },
+  wearBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  wearText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: colors.text,
+  },
   cardContent: {
     padding: 12,
   },
@@ -287,7 +395,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginBottom: 8,
   },
   priceLabel: {
     fontSize: 10,
@@ -315,22 +422,5 @@ const styles = StyleSheet.create({
   },
   gainNegative: {
     color: colors.error,
-  },
-  verifyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.backgroundSecondary,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  verifyText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.primary,
   },
 });
