@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
-  Modal,
   ScrollView,
   Alert,
 } from 'react-native';
@@ -17,10 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
 import { SneakerDatabase, SearchFilters } from '@/types/database';
-import { getSneakers, sneakerBrands, searchSneakers } from '@/data/sneakerDatabase';
+import { sneakerBrands } from '@/data/sneakerDatabase';
 import SneakerDetailModal from '@/components/SneakerDetailModal';
 import AddSneakerForm from '@/components/AddSneakerForm';
 import { AddSneakerForm as AddSneakerFormType } from '@/types/database';
+import { useSneakerDatabase } from '@/hooks/useSneakerDatabase';
 
 export default function DatabaseScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,7 +30,8 @@ export default function DatabaseScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedSneaker, setSelectedSneaker] = useState<SneakerDatabase | null>(null);
-  const [page, setPage] = useState(1);
+
+  const { sneakers, loading, total, hasMore, loadSneakers, loadMore, addSneaker, getStats } = useSneakerDatabase();
 
   const filters: SearchFilters = {
     brand: selectedBrand,
@@ -39,21 +40,26 @@ export default function DatabaseScreen() {
     sortBy: sortBy,
   };
 
-  const { sneakers, total, hasMore } = getSneakers(page, 20, filters);
+  // Load initial data
+  useEffect(() => {
+    loadSneakers(filters);
+  }, []);
+
+  // Reload when filters change
+  useEffect(() => {
+    loadSneakers(filters);
+  }, [selectedBrand, selectedCategory, sortBy, searchQuery]);
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
-    setPage(1);
   };
 
   const handleBrandFilter = (brand: string) => {
     setSelectedBrand(selectedBrand === brand ? undefined : brand);
-    setPage(1);
   };
 
   const handleCategoryFilter = (category: string) => {
     setSelectedCategory(selectedCategory === category ? undefined : category);
-    setPage(1);
   };
 
   const handleAddSneaker = () => {
@@ -61,9 +67,14 @@ export default function DatabaseScreen() {
     setShowAddModal(true);
   };
 
-  const handleSubmitSneaker = (form: AddSneakerFormType) => {
+  const handleSubmitSneaker = async (form: AddSneakerFormType) => {
     console.log('Submit sneaker:', form);
-    // This will be handled by the form component
+    try {
+      await addSneaker(form);
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Error submitting sneaker:', error);
+    }
   };
 
   const handleAddToCollection = (sneaker: SneakerDatabase) => {
@@ -86,6 +97,14 @@ export default function DatabaseScreen() {
     );
   };
 
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      loadMore(filters);
+    }
+  };
+
+  const stats = getStats();
+
   const renderSneakerCard = ({ item }: { item: SneakerDatabase }) => (
     <TouchableOpacity style={styles.sneakerCard} onPress={() => setSelectedSneaker(item)}>
       <Image source={{ uri: item.imageUrl }} style={styles.sneakerImage} />
@@ -96,6 +115,16 @@ export default function DatabaseScreen() {
             android_material_icon_name="verified"
             size={16}
             color={colors.secondary}
+          />
+        </View>
+      )}
+      {!item.isCurated && (
+        <View style={styles.userBadge}>
+          <IconSymbol
+            ios_icon_name="person.fill"
+            android_material_icon_name="person"
+            size={12}
+            color={colors.primary}
           />
         </View>
       )}
@@ -137,7 +166,9 @@ export default function DatabaseScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>Sneaker Database</Text>
-            <Text style={styles.subtitle}>{total.toLocaleString()} sneakers</Text>
+            <Text style={styles.subtitle}>
+              {total.toLocaleString()} sneakers • {stats.curated} curated • {stats.userGenerated} community
+            </Text>
           </View>
           <TouchableOpacity style={styles.addButton} onPress={handleAddSneaker}>
             <IconSymbol
@@ -294,6 +325,8 @@ export default function DatabaseScreen() {
             Platform.OS !== 'ios' && styles.listContentWithTabBar,
           ]}
           showsVerticalScrollIndicator={false}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <IconSymbol
@@ -351,7 +384,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
   },
@@ -507,6 +540,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 20,
     padding: 4,
+  },
+  userBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    padding: 6,
   },
   sneakerInfo: {
     padding: 12,

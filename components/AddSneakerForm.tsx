@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
@@ -17,7 +18,7 @@ import { AddSneakerForm as AddSneakerFormType } from '@/types/database';
 interface AddSneakerFormProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (form: AddSneakerFormType) => void;
+  onSubmit: (form: AddSneakerFormType) => Promise<void>;
 }
 
 export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneakerFormProps) {
@@ -37,8 +38,9 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
   });
 
   const [tagInput, setTagInput] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validation
     if (!form.sku || !form.brand || !form.model || !form.colorway) {
       Alert.alert('Missing Fields', 'Please fill in all required fields (SKU, Brand, Model, Colorway)');
@@ -50,15 +52,48 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
       return;
     }
 
-    console.log('Submit form:', form);
-    Alert.alert(
-      'Supabase Required',
-      'To add sneakers to the database, you need to enable Supabase backend.\n\nThis will allow:\n• User-generated content\n• Image uploads to Supabase Storage\n• Community verification\n• Real-time updates\n\nPress the Supabase button to get started!',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'OK', onPress: onClose },
-      ]
-    );
+    try {
+      setSubmitting(true);
+      await onSubmit(form);
+      
+      Alert.alert(
+        'Success!',
+        `${form.brand} ${form.model} has been added to the database!\n\nYour sneaker is now part of the community database and will appear in search results.`,
+        [
+          {
+            text: 'Add Another',
+            onPress: () => {
+              // Reset form
+              setForm({
+                sku: '',
+                brand: '',
+                model: '',
+                colorway: '',
+                releaseDate: '',
+                retailPrice: 0,
+                estimatedValue: 0,
+                imageUrl: '',
+                category: 'Basketball',
+                silhouette: '',
+                tags: [],
+                description: '',
+              });
+              setTagInput('');
+            },
+          },
+          {
+            text: 'Done',
+            onPress: onClose,
+            style: 'cancel',
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error submitting sneaker:', error);
+      Alert.alert('Error', 'Failed to add sneaker. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addTag = () => {
@@ -79,7 +114,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton} disabled={submitting}>
             <IconSymbol
               ios_icon_name="xmark"
               android_material_icon_name="close"
@@ -88,8 +123,16 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
             />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Add Sneaker</Text>
-          <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>Submit</Text>
+          <TouchableOpacity 
+            onPress={handleSubmit} 
+            style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator size="small" color={colors.text} />
+            ) : (
+              <Text style={styles.submitButtonText}>Submit</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -103,7 +146,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               color={colors.secondary}
             />
             <Text style={styles.infoBannerText}>
-              Add sneakers to the community database. All submissions will be reviewed before publishing.
+              Add sneakers to the community database. Your submission will be instantly added and searchable by all users!
             </Text>
           </View>
 
@@ -118,6 +161,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.sku}
               onChangeText={(text) => setForm({ ...form, sku: text })}
+              editable={!submitting}
             />
           </View>
 
@@ -132,6 +176,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.brand}
               onChangeText={(text) => setForm({ ...form, brand: text })}
+              editable={!submitting}
             />
           </View>
 
@@ -146,6 +191,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.model}
               onChangeText={(text) => setForm({ ...form, model: text })}
+              editable={!submitting}
             />
           </View>
 
@@ -160,6 +206,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.colorway}
               onChangeText={(text) => setForm({ ...form, colorway: text })}
+              editable={!submitting}
             />
           </View>
 
@@ -172,6 +219,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.silhouette}
               onChangeText={(text) => setForm({ ...form, silhouette: text })}
+              editable={!submitting}
             />
           </View>
 
@@ -187,6 +235,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
                     form.category === category && styles.categoryChipActive,
                   ]}
                   onPress={() => setForm({ ...form, category: category as any })}
+                  disabled={submitting}
                 >
                   <Text
                     style={[
@@ -210,6 +259,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.releaseDate}
               onChangeText={(text) => setForm({ ...form, releaseDate: text })}
+              editable={!submitting}
             />
           </View>
 
@@ -224,6 +274,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
                 keyboardType="numeric"
                 value={form.retailPrice > 0 ? form.retailPrice.toString() : ''}
                 onChangeText={(text) => setForm({ ...form, retailPrice: parseFloat(text) || 0 })}
+                editable={!submitting}
               />
             </View>
             <View style={[styles.formGroup, styles.halfWidth]}>
@@ -235,6 +286,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
                 keyboardType="numeric"
                 value={form.estimatedValue > 0 ? form.estimatedValue.toString() : ''}
                 onChangeText={(text) => setForm({ ...form, estimatedValue: parseFloat(text) || 0 })}
+                editable={!submitting}
               />
             </View>
           </View>
@@ -248,9 +300,10 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               placeholderTextColor={colors.textSecondary}
               value={form.imageUrl}
               onChangeText={(text) => setForm({ ...form, imageUrl: text })}
+              editable={!submitting}
             />
             <Text style={styles.helperText}>
-              With Supabase, you can upload images directly from your device
+              Use an Unsplash image URL or any public image link
             </Text>
           </View>
 
@@ -265,8 +318,9 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
                 value={tagInput}
                 onChangeText={setTagInput}
                 onSubmitEditing={addTag}
+                editable={!submitting}
               />
-              <TouchableOpacity style={styles.addTagButton} onPress={addTag}>
+              <TouchableOpacity style={styles.addTagButton} onPress={addTag} disabled={submitting}>
                 <IconSymbol
                   ios_icon_name="plus.circle.fill"
                   android_material_icon_name="add-circle"
@@ -280,7 +334,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
                 {form.tags.map((tag, index) => (
                   <View key={index} style={styles.tag}>
                     <Text style={styles.tagText}>#{tag}</Text>
-                    <TouchableOpacity onPress={() => removeTag(tag)}>
+                    <TouchableOpacity onPress={() => removeTag(tag)} disabled={submitting}>
                       <IconSymbol
                         ios_icon_name="xmark.circle.fill"
                         android_material_icon_name="cancel"
@@ -305,6 +359,7 @@ export default function AddSneakerForm({ visible, onClose, onSubmit }: AddSneake
               onChangeText={(text) => setForm({ ...form, description: text })}
               multiline
               numberOfLines={4}
+              editable={!submitting}
             />
           </View>
 
@@ -342,6 +397,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: colors.primary,
     borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
   },
   submitButtonText: {
     fontSize: 16,

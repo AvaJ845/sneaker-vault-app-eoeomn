@@ -1,7 +1,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { SneakerDatabase, SearchFilters, AddSneakerForm } from '@/types/database';
-import { getSneakers, searchSneakers, getSneakerById } from '@/data/sneakerDatabase';
+import { 
+  getSneakers, 
+  searchSneakers, 
+  getSneakerById, 
+  addUserSneaker,
+  getDatabaseStats 
+} from '@/data/sneakerDatabase';
 
 // This hook manages the sneaker database
 // Currently uses local data, but can be easily connected to Supabase
@@ -81,24 +87,41 @@ export const useSneakerDatabase = () => {
   }, []);
 
   // Function to add a user-generated sneaker
-  // This will need Supabase integration to work
+  // This now works locally and will automatically add to the database
   const addSneaker = useCallback(async (form: AddSneakerForm) => {
     console.log('Add sneaker:', form);
     
-    // TODO: Implement Supabase integration
-    // const { data, error } = await supabase
-    //   .from('sneakers')
-    //   .insert([{
-    //     ...form,
-    //     isCurated: false,
-    //     addedBy: user.id,
-    //     verificationStatus: 'pending',
-    //     popularity: 0,
-    //     createdAt: new Date().toISOString(),
-    //     updatedAt: new Date().toISOString(),
-    //   }])
-    
-    throw new Error('Supabase integration required. Please enable Supabase to add sneakers.');
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Add to local database
+      const newSneaker = addUserSneaker({
+        ...form,
+        addedBy: 'current-user', // In production, this would be the actual user ID
+      });
+
+      console.log('Successfully added sneaker to database:', newSneaker);
+
+      // Refresh the list to show the new sneaker
+      await loadSneakers(undefined, 1);
+
+      return newSneaker;
+    } catch (err) {
+      console.error('Error adding sneaker:', err);
+      setError('Failed to add sneaker');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [loadSneakers]);
+
+  // Get database statistics
+  const getStats = useCallback(() => {
+    return getDatabaseStats();
   }, []);
 
   return {
@@ -113,6 +136,7 @@ export const useSneakerDatabase = () => {
     search,
     getSneaker,
     addSneaker,
+    getStats,
   };
 };
 
