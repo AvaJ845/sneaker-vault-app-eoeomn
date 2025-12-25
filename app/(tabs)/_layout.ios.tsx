@@ -45,6 +45,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="database"
+        options={{
+          title: 'Database',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol ios_icon_name="cylinder.fill" android_material_icon_name="storage" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="collection"
         options={{
           title: 'Collection',

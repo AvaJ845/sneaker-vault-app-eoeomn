@@ -24,6 +24,12 @@ export default function TabLayout() {
       label: 'Drops',
     },
     {
+      name: 'database',
+      route: '/(tabs)/database',
+      icon: 'storage',
+      label: 'Database',
+    },
+    {
       name: 'collection',
       route: '/(tabs)/collection',
       icon: 'grid-view',
@@ -54,6 +60,7 @@ export default function TabLayout() {
         <Stack.Screen key="home" name="(home)" />
         <Stack.Screen key="reels" name="reels" />
         <Stack.Screen key="drops" name="drops" />
+        <Stack.Screen key="database" name="database" />
         <Stack.Screen key="collection" name="collection" />
         <Stack.Screen key="marketplace" name="marketplace" />
         <Stack.Screen key="profile" name="profile" />
