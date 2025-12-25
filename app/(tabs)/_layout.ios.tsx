@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tabs } from 'expo-router/unstable-native-tabs';
 import { colors } from '@/styles/commonStyles';
 import { 
   FlameIcon, 
@@ -11,7 +10,28 @@ import {
   VaultIcon
 } from '@/components/CustomIcons';
 
+// Try to import Tabs with error handling
+let Tabs: any;
+try {
+  const expoRouterTabs = require('expo-router/unstable-native-tabs');
+  Tabs = expoRouterTabs.Tabs;
+  console.log('✅ Successfully imported Tabs from expo-router/unstable-native-tabs');
+} catch (error) {
+  console.error('❌ Failed to import Tabs:', error);
+  // Fallback to regular expo-router if unstable-native-tabs fails
+  const expoRouter = require('expo-router');
+  Tabs = expoRouter.Tabs;
+  console.log('⚠️ Using fallback Tabs from expo-router');
+}
+
 export default function TabLayout() {
+  console.log('iOS TabLayout rendering, Tabs:', typeof Tabs);
+  
+  if (!Tabs) {
+    console.error('❌ Tabs is undefined!');
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -33,7 +53,7 @@ export default function TabLayout() {
         name="(home)"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <FeedIcon size={26} color={color} />
           ),
         }}
@@ -42,7 +62,7 @@ export default function TabLayout() {
         name="drops"
         options={{
           title: 'Drops',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <FlameIcon size={26} color={color} />
           ),
         }}
@@ -51,7 +71,7 @@ export default function TabLayout() {
         name="database"
         options={{
           title: 'Database',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <ShelfIcon size={26} color={color} />
           ),
         }}
@@ -60,7 +80,7 @@ export default function TabLayout() {
         name="collection"
         options={{
           title: 'Vault',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <VaultIcon size={26} color={color} />
           ),
         }}
@@ -69,7 +89,7 @@ export default function TabLayout() {
         name="marketplace"
         options={{
           title: 'Market',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <PriceTagIcon size={26} color={color} />
           ),
         }}
@@ -78,7 +98,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <SneakerRotateIcon size={26} color={color} />
           ),
         }}
