@@ -1,35 +1,121 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { IconSymbol } from "@/components/IconSymbol";
-import { GlassView } from "expo-glass-effect";
-import { useTheme } from "@react-navigation/native";
+
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { IconSymbol } from '@/components/IconSymbol';
+import { colors } from '@/styles/commonStyles';
+
+interface UserPost {
+  id: string;
+  imageUrl: string;
+}
+
+const mockUserPosts: UserPost[] = [
+  { id: '1', imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop' },
+  { id: '2', imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop' },
+  { id: '3', imageUrl: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=400&h=400&fit=crop' },
+  { id: '4', imageUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=400&fit=crop' },
+  { id: '5', imageUrl: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=400&fit=crop' },
+  { id: '6', imageUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&h=400&fit=crop' },
+];
 
 export default function ProfileScreen() {
-  const theme = useTheme();
+  const [posts] = useState<UserPost[]>(mockUserPosts);
+  const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
+
+  const renderGridItem = ({ item }: { item: UserPost }) => (
+    <TouchableOpacity style={styles.gridItem}>
+      <Image source={{ uri: item.imageUrl }} style={styles.gridImage} />
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
-        <GlassView style={styles.profileHeader} glassEffectStyle="regular">
-          <IconSymbol ios_icon_name="person.circle.fill" android_material_icon_name="person" size={24} color={theme.colors.primary} />
-          <Text style={[styles.name, { color: theme.colors.text }]}>John Doe</Text>
-          <Text style={[styles.email, { color: theme.dark ? '#98989D' : '#666' }]}>john.doe@example.com</Text>
-        </GlassView>
+        <View style={styles.header}>
+          <Text style={styles.username}>sneaker_vault_pro</Text>
+          <TouchableOpacity>
+            <IconSymbol ios_icon_name="line.3.horizontal" android_material_icon_name="menu" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
 
-        <GlassView style={styles.section} glassEffectStyle="regular">
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="phone.fill" android_material_icon_name="phone" size={24} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>+1 (555) 123-4567</Text>
+        <View style={styles.profileSection}>
+          <Image
+            source={{ uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop' }}
+            style={styles.avatar}
+          />
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>42</Text>
+              <Text style={styles.statLabel}>Posts</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>1.2K</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>856</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
           </View>
-          <View style={styles.infoRow}>
-            <IconSymbol ios_icon_name="location.fill" android_material_icon_name="location-on" size={24} color={theme.dark ? '#98989D' : '#666'} />
-            <Text style={[styles.infoText, { color: theme.colors.text }]}>San Francisco, CA</Text>
-          </View>
-        </GlassView>
+        </View>
+
+        <View style={styles.bioSection}>
+          <Text style={styles.displayName}>Sneaker Vault Pro</Text>
+          <Text style={styles.bio}>
+            🔥 Sneaker Collector & Enthusiast{'\n'}
+            👟 Building the ultimate collection{'\n'}
+            💰 Tracking value since 2020{'\n'}
+            📍 Los Angeles, CA
+          </Text>
+        </View>
+
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.editButton}>
+            <Text style={styles.editButtonText}>Edit Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.shareButton}>
+            <Text style={styles.shareButtonText}>Share Profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'grid' && styles.activeTab]}
+            onPress={() => setActiveTab('grid')}
+          >
+            <IconSymbol
+              ios_icon_name="square.grid.3x3.fill"
+              android_material_icon_name="grid-on"
+              size={24}
+              color={activeTab === 'grid' ? colors.text : colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'list' && styles.activeTab]}
+            onPress={() => setActiveTab('list')}
+          >
+            <IconSymbol
+              ios_icon_name="list.bullet"
+              android_material_icon_name="view-list"
+              size={24}
+              color={activeTab === 'list' ? colors.text : colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          data={posts}
+          renderItem={renderGridItem}
+          keyExtractor={(item) => item.id}
+          numColumns={3}
+          scrollEnabled={false}
+          contentContainerStyle={styles.gridContainer}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -38,38 +124,133 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   contentContainer: {
-    padding: 20,
+    paddingBottom: 20,
   },
-  profileHeader: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 12,
-    padding: 32,
-    marginBottom: 16,
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  name: {
-    fontSize: 24,
+  username: {
+    fontSize: 20,
     fontWeight: 'bold',
+    color: colors.text,
   },
-  email: {
-    fontSize: 16,
-  },
-  section: {
-    borderRadius: 12,
-    padding: 20,
-    gap: 12,
-  },
-  infoRow: {
+  profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
-  infoText: {
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginRight: 24,
+  },
+  statsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  bioSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  displayName: {
     fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  bio: {
+    fontSize: 14,
+    color: colors.text,
+    lineHeight: 20,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    gap: 8,
+  },
+  editButton: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  shareButton: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  shareButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    marginBottom: 1,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: colors.text,
+  },
+  gridContainer: {
+    gap: 2,
+  },
+  gridItem: {
+    width: '33.33%',
+    aspectRatio: 1,
+    padding: 1,
+  },
+  gridImage: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.border,
   },
 });
