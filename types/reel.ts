@@ -18,3 +18,6 @@ export interface Reel {
   musicName?: string;
   musicArtist?: string;
 }
+
+// Sole Stories are vertical video-style showcases of sneakers
+// Similar to TikTok/Instagram Reels but focused on sneaker culture

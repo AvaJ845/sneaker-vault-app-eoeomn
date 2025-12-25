@@ -1,6 +1,7 @@
 
 import { Reel } from '@/types/reel';
 
+// Mock data for Sole Stories - vertical video-style sneaker showcases
 export const mockReels: Reel[] = [
   {
     id: 'r1',

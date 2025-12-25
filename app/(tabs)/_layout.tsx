@@ -15,7 +15,7 @@ export default function TabLayout() {
       name: 'reels',
       route: '/(tabs)/reels',
       icon: 'play-circle',
-      label: 'Reels',
+      label: 'Sole Stories',
     },
     {
       name: 'drops',

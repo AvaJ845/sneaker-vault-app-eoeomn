@@ -27,6 +27,8 @@ interface ReelCardProps {
 
 const { width, height } = Dimensions.get('window');
 
+// ReelCard component displays individual Sole Stories
+// Museum-quality presentation with rotating sneaker showcase
 export function ReelCard({ reel, isActive, onLike, onComment, onShare, onUserPress }: ReelCardProps) {
   const [isLiked, setIsLiked] = useState(reel.isLiked);
   const [likesCount, setLikesCount] = useState(reel.likes);

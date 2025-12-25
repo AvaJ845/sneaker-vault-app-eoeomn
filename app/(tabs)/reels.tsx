@@ -7,7 +7,7 @@ import { ReelCard } from '@/components/ReelCard';
 import { mockReels } from '@/data/mockReels';
 import { Reel } from '@/types/reel';
 
-export default function ReelsScreen() {
+export default function SoleStoriesScreen() {
   const [reels, setReels] = useState<Reel[]>(mockReels);
   const [activeReelId, setActiveReelId] = useState<string>(mockReels[0]?.id || '');
   const flatListRef = useRef<FlatList>(null);
@@ -23,7 +23,7 @@ export default function ReelsScreen() {
   };
 
   const handleLike = (reelId: string) => {
-    console.log('Liked reel:', reelId);
+    console.log('Liked Sole Story:', reelId);
     setReels(prevReels =>
       prevReels.map(reel =>
         reel.id === reelId
@@ -34,12 +34,12 @@ export default function ReelsScreen() {
   };
 
   const handleComment = (reelId: string) => {
-    console.log('Comment on reel:', reelId);
+    console.log('Comment on Sole Story:', reelId);
     Alert.alert('Comments', 'Comments feature coming soon!');
   };
 
   const handleShare = (reelId: string) => {
-    console.log('Share reel:', reelId);
+    console.log('Share Sole Story:', reelId);
     Alert.alert('Share', 'Share feature coming soon!');
   };
 

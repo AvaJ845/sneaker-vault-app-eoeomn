@@ -29,7 +29,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="reels"
         options={{
-          title: 'Reels',
+          title: 'Sole Stories',
           tabBarIcon: ({ color }) => (
             <IconSymbol ios_icon_name="play.circle.fill" android_material_icon_name="play-circle" size={28} color={color} />
           ),
