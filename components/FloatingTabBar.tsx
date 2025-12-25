@@ -2,9 +2,17 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
-import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
 import { BlurView } from 'expo-blur';
+import { 
+  FlameIcon, 
+  FeedIcon, 
+  ShelfIcon, 
+  PriceTagIcon, 
+  SneakerRotateIcon,
+  ShoeboxAddIcon,
+  VaultIcon
+} from './CustomIcons';
 
 export interface TabBarItem {
   name: string;
@@ -16,6 +24,34 @@ export interface TabBarItem {
 interface FloatingTabBarProps {
   tabs: TabBarItem[];
 }
+
+const getCustomIcon = (iconName: string, size: number, color: string) => {
+  switch (iconName) {
+    case 'home':
+    case 'feed':
+      return <FeedIcon size={size} color={color} />;
+    case 'local-fire-department':
+    case 'flame':
+      return <FlameIcon size={size} color={color} />;
+    case 'storage':
+    case 'shelf':
+      return <ShelfIcon size={size} color={color} />;
+    case 'storefront':
+    case 'price-tag':
+      return <PriceTagIcon size={size} color={color} />;
+    case 'person':
+    case 'profile':
+      return <SneakerRotateIcon size={size} color={color} />;
+    case 'add':
+    case 'upload':
+      return <ShoeboxAddIcon size={size} color={color} />;
+    case 'bookmark':
+    case 'vault':
+      return <VaultIcon size={size} color={color} />;
+    default:
+      return <FeedIcon size={size} color={color} />;
+  }
+};
 
 export default function FloatingTabBar({ tabs }: FloatingTabBarProps) {
   const router = useRouter();
@@ -30,6 +66,13 @@ export default function FloatingTabBar({ tabs }: FloatingTabBarProps) {
 
   return (
     <View style={styles.container}>
+      {/* Glow effect layers */}
+      <View style={styles.glowContainer}>
+        <View style={[styles.glowLayer, styles.glowLayer1]} />
+        <View style={[styles.glowLayer, styles.glowLayer2]} />
+        <View style={[styles.glowLayer, styles.glowLayer3]} />
+      </View>
+      
       <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
         <View style={styles.tabBar}>
           {tabs.map((tab, index) => {
@@ -41,12 +84,7 @@ export default function FloatingTabBar({ tabs }: FloatingTabBarProps) {
                 onPress={() => router.push(tab.route as any)}
               >
                 <View style={[styles.iconContainer, active && styles.iconContainerActive]}>
-                  <IconSymbol
-                    ios_icon_name={tab.icon}
-                    android_material_icon_name={tab.icon}
-                    size={24}
-                    color={active ? colors.primary : colors.textSecondary}
-                  />
+                  {getCustomIcon(tab.icon, 24, active ? colors.primary : colors.textSecondary)}
                 </View>
                 <Text style={[styles.label, active && styles.labelActive]}>
                   {tab.label}
@@ -72,15 +110,52 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     pointerEvents: 'box-none',
   },
+  glowContainer: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 20 : 10,
+    left: 16,
+    right: 16,
+    height: 70,
+    borderRadius: 24,
+    overflow: 'visible',
+  },
+  glowLayer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: 24,
+  },
+  glowLayer1: {
+    backgroundColor: colors.glow,
+    opacity: 0.3,
+    transform: [{ scale: 1.05 }],
+    boxShadow: '0px 8px 32px rgba(255, 107, 53, 0.4)',
+  },
+  glowLayer2: {
+    backgroundColor: colors.glowPurple,
+    opacity: 0.2,
+    transform: [{ scale: 1.03 }],
+    boxShadow: '0px 6px 24px rgba(157, 78, 221, 0.3)',
+  },
+  glowLayer3: {
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    opacity: 0.5,
+    transform: [{ scale: 1.01 }],
+    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.6)',
+  },
   blurContainer: {
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
+    boxShadow: '0px 10px 40px rgba(0, 0, 0, 0.8)',
+    elevation: 12,
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    backgroundColor: 'rgba(26, 26, 26, 0.95)',
     paddingVertical: 8,
     paddingHorizontal: 8,
   },
@@ -92,14 +167,16 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 4,
+    transform: [{ scale: 1 }],
   },
   iconContainerActive: {
-    transform: [{ scale: 1.1 }],
+    transform: [{ scale: 1.15 }],
   },
   label: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: colors.textSecondary,
+    letterSpacing: 0.3,
   },
   labelActive: {
     color: colors.primary,

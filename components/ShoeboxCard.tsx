@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,10 +10,10 @@ import Animated, {
   Extrapolate,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { IconSymbol } from '@/components/IconSymbol';
-import { colors } from '@/styles/commonStyles';
+import { colors, typography } from '@/styles/commonStyles';
 import { Post } from '@/types/post';
 import { FireAnimation } from './FireAnimation';
+import { FlameIcon, CommentIcon, VaultIcon } from './CustomIcons';
 
 interface ShoeboxCardProps {
   post: Post;
@@ -26,7 +26,7 @@ interface ShoeboxCardProps {
 }
 
 const { width } = Dimensions.get('window');
-const CARD_HEIGHT = width + 200; // Approximate card height
+const CARD_HEIGHT = width + 200;
 
 export function ShoeboxCard({ 
   post, 
@@ -49,7 +49,6 @@ export function ShoeboxCard({
     const DOUBLE_TAP_DELAY = 300;
 
     if (now - lastTap < DOUBLE_TAP_DELAY) {
-      // Double tap detected
       if (!isLiked) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         setIsLiked(true);
@@ -57,7 +56,6 @@ export function ShoeboxCard({
         setShowFireAnimation(true);
         onLike(post.id);
 
-        // Animate card
         scale.value = withSpring(0.95, { damping: 10 });
         setTimeout(() => {
           scale.value = withSpring(1);
@@ -108,8 +106,7 @@ export function ShoeboxCard({
       };
     }
 
-    // Calculate card position in viewport
-    const cardOffset = index * (CARD_HEIGHT + 24); // 24 is marginBottom
+    const cardOffset = index * (CARD_HEIGHT + 24);
     const inputRange = [
       cardOffset - CARD_HEIGHT,
       cardOffset,
@@ -120,14 +117,14 @@ export function ShoeboxCard({
     const rotateX = interpolate(
       scrollY.value,
       inputRange,
-      [2, 0, -2],
+      [3, 0, -3],
       Extrapolate.CLAMP
     );
 
     const rotateY = interpolate(
       scrollY.value,
       inputRange,
-      [-1, 0, 1],
+      [-1.5, 0, 1.5],
       Extrapolate.CLAMP
     );
 
@@ -135,13 +132,13 @@ export function ShoeboxCard({
     const scaleValue = interpolate(
       scrollY.value,
       inputRange,
-      [0.98, 1, 0.98],
+      [0.97, 1, 0.97],
       Extrapolate.CLAMP
     );
 
     return {
       transform: [
-        { perspective: 1000 },
+        { perspective: 1200 },
         { rotateX: `${rotateX}deg` },
         { rotateY: `${rotateY}deg` },
         { scale: scale.value * scaleValue },
@@ -149,7 +146,7 @@ export function ShoeboxCard({
     };
   });
 
-  // Layered shadow animation
+  // Enhanced layered shadow animation
   const shadowStyle = useAnimatedStyle(() => {
     if (!scrollY) {
       return {};
@@ -162,11 +159,10 @@ export function ShoeboxCard({
       cardOffset + CARD_HEIGHT / 2,
     ];
 
-    // Shadow intensity increases when card is centered
     const shadowOpacity = interpolate(
       scrollY.value,
       inputRange,
-      [0.3, 0.6, 0.3],
+      [0.4, 0.7, 0.4],
       Extrapolate.CLAMP
     );
 
@@ -177,14 +173,16 @@ export function ShoeboxCard({
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
-      {/* Multiple shadow layers for depth */}
+      {/* Enhanced multiple shadow layers for 3D depth */}
       <Animated.View style={[styles.shadowLayer1, shadowStyle]} />
       <Animated.View style={[styles.shadowLayer2, shadowStyle]} />
       <Animated.View style={[styles.shadowLayer3, shadowStyle]} />
+      <Animated.View style={[styles.shadowLayer4, shadowStyle]} />
 
-      {/* Shoebox Lid */}
+      {/* Shoebox Lid with enhanced details */}
       <View style={styles.shoeboxLid}>
         <View style={styles.lidStripe} />
+        <View style={styles.lidStripePurple} />
         <View style={styles.lidDetail1} />
         <View style={styles.lidDetail2} />
       </View>
@@ -205,7 +203,7 @@ export function ShoeboxCard({
             </View>
           </TouchableOpacity>
           <TouchableOpacity>
-            <IconSymbol ios_icon_name="ellipsis" android_material_icon_name="more-vert" size={24} color={colors.text} />
+            <Text style={styles.moreIcon}>⋯</Text>
           </TouchableOpacity>
         </View>
 
@@ -217,38 +215,37 @@ export function ShoeboxCard({
           </View>
         </TouchableOpacity>
 
-        {/* Actions */}
+        {/* Actions with custom icons */}
         <View style={styles.actions}>
           <View style={styles.leftActions}>
             <TouchableOpacity onPress={handleLike} style={styles.actionButton}>
-              <IconSymbol
-                ios_icon_name={isLiked ? 'flame.fill' : 'flame'}
-                android_material_icon_name={isLiked ? 'local-fire-department' : 'local-fire-department'}
-                size={28}
+              <FlameIcon 
+                size={28} 
                 color={isLiked ? colors.fireOrange : colors.text}
+                strokeWidth={isLiked ? 2.5 : 2}
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onComment(post.id)} style={styles.actionButton}>
-              <IconSymbol ios_icon_name="bubble.left" android_material_icon_name="chat-bubble-outline" size={28} color={colors.text} />
+              <CommentIcon size={28} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onShare(post.id)} style={styles.actionButton}>
-              <IconSymbol ios_icon_name="paperplane" android_material_icon_name="send" size={28} color={colors.text} />
+              <Text style={styles.shareIcon}>↗</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity>
-            <IconSymbol ios_icon_name="bookmark" android_material_icon_name="bookmark-border" size={28} color={colors.text} />
+            <VaultIcon size={28} color={colors.text} />
           </TouchableOpacity>
         </View>
 
-        {/* Info */}
+        {/* Info with updated typography */}
         <View style={styles.info}>
           <View style={styles.likesRow}>
-            <IconSymbol ios_icon_name="flame.fill" android_material_icon_name="local-fire-department" size={16} color={colors.fireOrange} />
+            <FlameIcon size={16} color={colors.fireOrange} />
             <Text style={styles.likes}>{likesCount.toLocaleString()} fires</Text>
           </View>
           <View style={styles.captionContainer}>
             <Text style={styles.caption}>
-              <Text style={styles.username}>{post.username}</Text> {post.caption}
+              <Text style={styles.captionUsername}>{post.username}</Text> {post.caption}
             </Text>
           </View>
           {post.comments > 0 && (
@@ -269,75 +266,100 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     position: 'relative',
   },
-  // Layered shadow system for 3D depth
+  // Enhanced layered shadow system for 3D depth (8-10px lift)
   shadowLayer1: {
+    position: 'absolute',
+    top: 16,
+    left: 6,
+    right: 6,
+    bottom: -16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 14,
+    zIndex: -4,
+    boxShadow: '0px 20px 60px rgba(0, 0, 0, 0.6)',
+  },
+  shadowLayer2: {
     position: 'absolute',
     top: 12,
     left: 4,
     right: 4,
     bottom: -12,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 14,
+    borderRadius: 13,
     zIndex: -3,
+    boxShadow: '0px 15px 45px rgba(0, 0, 0, 0.5)',
   },
-  shadowLayer2: {
+  shadowLayer3: {
     position: 'absolute',
     top: 8,
     left: 2,
     right: 2,
     bottom: -8,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 13,
+    borderRadius: 12,
     zIndex: -2,
+    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.4)',
   },
-  shadowLayer3: {
+  shadowLayer4: {
     position: 'absolute',
     top: 4,
     left: 1,
     right: 1,
     bottom: -4,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 12,
+    borderRadius: 11,
     zIndex: -1,
+    boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.3)',
   },
   shoeboxLid: {
     backgroundColor: colors.shoeboxLid,
-    height: 12,
+    height: 14,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: colors.border,
     position: 'relative',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.4)',
-    elevation: 3,
+    boxShadow: '0px 3px 10px rgba(0, 0, 0, 0.5)',
+    elevation: 4,
   },
   lidStripe: {
     position: 'absolute',
-    top: 4,
+    top: 5,
     left: '10%',
     right: '10%',
-    height: 2,
+    height: 2.5,
     backgroundColor: colors.primary,
-    borderRadius: 1,
+    borderRadius: 1.25,
+    boxShadow: '0px 1px 4px rgba(255, 107, 53, 0.6)',
+  },
+  lidStripePurple: {
+    position: 'absolute',
+    top: 9,
+    left: '15%',
+    right: '15%',
+    height: 1.5,
+    backgroundColor: colors.secondary,
+    borderRadius: 0.75,
+    opacity: 0.7,
   },
   lidDetail1: {
     position: 'absolute',
-    top: 2,
+    top: 3,
     left: '5%',
-    width: 20,
-    height: 1,
-    backgroundColor: colors.secondary,
-    opacity: 0.6,
+    width: 24,
+    height: 1.5,
+    backgroundColor: colors.accent,
+    opacity: 0.5,
   },
   lidDetail2: {
     position: 'absolute',
-    top: 2,
+    top: 3,
     right: '5%',
-    width: 20,
-    height: 1,
-    backgroundColor: colors.secondary,
-    opacity: 0.6,
+    width: 24,
+    height: 1.5,
+    backgroundColor: colors.accent,
+    opacity: 0.5,
   },
   shoeboxBase: {
     backgroundColor: colors.shoeboxBase,
@@ -347,38 +369,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
-    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.7)',
-    elevation: 10,
+    boxShadow: '0px 12px 40px rgba(0, 0, 0, 0.8)',
+    elevation: 12,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
-    backgroundColor: 'rgba(28, 28, 30, 0.95)',
+    backgroundColor: 'rgba(28, 28, 30, 0.98)',
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     marginRight: 12,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: colors.secondary,
-    boxShadow: '0px 2px 8px rgba(157, 78, 221, 0.4)',
+    boxShadow: '0px 3px 10px rgba(157, 78, 221, 0.5)',
   },
   username: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
+    ...typography.username,
   },
   sneakerInfo: {
-    fontSize: 12,
-    color: colors.textSecondary,
+    ...typography.shoeName,
     marginTop: 2,
+  },
+  moreIcon: {
+    fontSize: 24,
+    color: colors.text,
+    fontWeight: '700',
   },
   imageContainer: {
     width: '100%',
@@ -395,47 +419,53 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(28, 28, 30, 0.95)',
+    paddingVertical: 12,
+    backgroundColor: 'rgba(28, 28, 30, 0.98)',
   },
   leftActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   actionButton: {
-    marginRight: 16,
+    marginRight: 18,
+  },
+  shareIcon: {
+    fontSize: 26,
+    color: colors.text,
+    fontWeight: '700',
   },
   info: {
     paddingHorizontal: 12,
-    paddingBottom: 14,
-    backgroundColor: 'rgba(28, 28, 30, 0.95)',
+    paddingBottom: 16,
+    backgroundColor: 'rgba(28, 28, 30, 0.98)',
   },
   likesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   likes: {
-    fontSize: 14,
+    ...typography.body,
     fontWeight: '700',
-    color: colors.text,
     marginLeft: 6,
   },
   captionContainer: {
-    marginBottom: 6,
+    marginBottom: 8,
   },
   caption: {
+    ...typography.body,
+    lineHeight: 20,
+  },
+  captionUsername: {
+    ...typography.username,
     fontSize: 14,
-    color: colors.text,
-    lineHeight: 18,
   },
   viewComments: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    ...typography.caption,
     marginBottom: 6,
   },
   timestamp: {
-    fontSize: 12,
-    color: colors.textSecondary,
+    ...typography.caption,
+    fontSize: 11,
   },
 });

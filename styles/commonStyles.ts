@@ -41,6 +41,8 @@ export const colors = {
   // Special effects
   overlay: 'rgba(0, 0, 0, 0.7)',
   shimmer: 'rgba(255, 255, 255, 0.1)',
+  glow: 'rgba(255, 107, 53, 0.4)',
+  glowPurple: 'rgba(157, 78, 221, 0.4)',
   
   // Gradient colors for premium feel
   gradientStart: '#FF6B35',
@@ -52,6 +54,73 @@ export const colors = {
   lightText: '#0A0A0A',
   lightTextSecondary: '#666666',
   lightBorder: '#E0E0E0',
+};
+
+// Typography system - Sneaker Vault brand
+export const typography = {
+  // App Name - Helvetica Neue Black equivalent (using system fonts)
+  appName: {
+    fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-CondensedBlack' : 'sans-serif-condensed',
+    fontSize: 32,
+    fontWeight: '900' as const,
+    letterSpacing: -0.96, // -0.03em of 32px
+    color: colors.text,
+  },
+  
+  // Tagline - Futura PT Medium equivalent
+  tagline: {
+    fontFamily: Platform.OS === 'ios' ? 'Futura-Medium' : 'sans-serif',
+    fontSize: 13,
+    fontWeight: '500' as const,
+    letterSpacing: 1.95, // +0.15em of 13px
+    textTransform: 'uppercase' as const,
+    color: colors.textSecondary,
+  },
+  
+  // Username - SF Pro Display Semibold
+  username: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontSize: 16,
+    fontWeight: '600' as const,
+    letterSpacing: 0,
+    color: colors.text,
+  },
+  
+  // Shoe Name - SF Pro Display Regular
+  shoeName: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontSize: 14,
+    fontWeight: '400' as const,
+    letterSpacing: 0,
+    color: colors.textSecondary,
+  },
+  
+  // Body text
+  body: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 20,
+    color: colors.text,
+  },
+  
+  // Caption
+  caption: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontSize: 12,
+    fontWeight: '400' as const,
+    lineHeight: 16,
+    color: colors.textSecondary,
+  },
+  
+  // Button text
+  button: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontSize: 16,
+    fontWeight: '700' as const,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as const,
+  },
 };
 
 export const buttonStyles = StyleSheet.create({
@@ -123,11 +192,8 @@ export const commonStyles = StyleSheet.create({
     width: '100%',
   },
   title: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: colors.text,
+    ...typography.appName,
     marginBottom: 8,
-    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 22,
@@ -137,16 +203,10 @@ export const commonStyles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   text: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: colors.text,
-    lineHeight: 24,
+    ...typography.body,
   },
   textSecondary: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: colors.textSecondary,
-    lineHeight: 20,
+    ...typography.caption,
   },
   section: {
     width: '100%',

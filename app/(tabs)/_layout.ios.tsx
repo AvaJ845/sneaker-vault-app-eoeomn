@@ -1,8 +1,15 @@
 
 import React from 'react';
 import { Tabs } from 'expo-router/unstable-native-tabs';
-import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
+import { 
+  FlameIcon, 
+  FeedIcon, 
+  ShelfIcon, 
+  PriceTagIcon, 
+  SneakerRotateIcon,
+  VaultIcon
+} from '@/components/CustomIcons';
 
 export default function TabLayout() {
   return (
@@ -12,8 +19,13 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: 'rgba(26, 26, 26, 0.95)',
           borderTopColor: colors.border,
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: 24,
+          height: 88,
+          boxShadow: '0px -4px 20px rgba(0, 0, 0, 0.6)',
         },
       }}
     >
@@ -22,16 +34,7 @@ export default function TabLayout() {
         options={{
           title: 'Feed',
           tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="house.fill" android_material_icon_name="home" size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="reels"
-        options={{
-          title: 'Sole Stories',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="play.circle.fill" android_material_icon_name="play-circle" size={28} color={color} />
+            <FeedIcon size={26} color={color} />
           ),
         }}
       />
@@ -40,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Drops',
           tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="flame.fill" android_material_icon_name="local-fire-department" size={28} color={color} />
+            <FlameIcon size={26} color={color} />
           ),
         }}
       />
@@ -49,16 +52,16 @@ export default function TabLayout() {
         options={{
           title: 'Database',
           tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="cylinder.fill" android_material_icon_name="storage" size={28} color={color} />
+            <ShelfIcon size={26} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="collection"
         options={{
-          title: 'Collection',
+          title: 'Vault',
           tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="square.grid.2x2.fill" android_material_icon_name="grid-view" size={28} color={color} />
+            <VaultIcon size={26} color={color} />
           ),
         }}
       />
@@ -67,7 +70,7 @@ export default function TabLayout() {
         options={{
           title: 'Market',
           tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="storefront.fill" android_material_icon_name="storefront" size={28} color={color} />
+            <PriceTagIcon size={26} color={color} />
           ),
         }}
       />
@@ -76,8 +79,20 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => (
-            <IconSymbol ios_icon_name="person.fill" android_material_icon_name="person" size={28} color={color} />
+            <SneakerRotateIcon size={26} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="reels"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="upload"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

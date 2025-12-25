@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet, ScrollView, Alert, Text, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
-import { colors } from '@/styles/commonStyles';
+import { colors, typography } from '@/styles/commonStyles';
 import { StoryCircle } from '@/components/StoryCircle';
 import { ShoeboxCard } from '@/components/ShoeboxCard';
 import { mockPosts, mockStories } from '@/data/mockPosts';
@@ -65,8 +65,8 @@ export default function HomeScreen() {
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      <Text style={styles.logo}>Sneaker Vault</Text>
-      <Text style={styles.tagline}>Track. Showcase. Connect.</Text>
+      <Text style={styles.logo}>SNEAKER VAULT</Text>
+      <Text style={styles.tagline}>TRACK. SHOWCASE. CONNECT.</Text>
     </View>
   );
 
@@ -141,23 +141,19 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     backgroundColor: colors.background,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   logo: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: colors.text,
-    letterSpacing: -0.5,
+    ...typography.appName,
+    fontSize: 26,
+    letterSpacing: -0.78,
   },
   tagline: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginTop: 2,
-    letterSpacing: 0.5,
+    ...typography.tagline,
+    marginTop: 4,
   },
   storiesContainer: {
     backgroundColor: colors.card,
