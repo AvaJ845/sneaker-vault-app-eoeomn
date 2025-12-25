@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
 
@@ -15,14 +16,27 @@ interface StoryCircleProps {
 export function StoryCircle({ username, userAvatar, hasUnviewed, onPress, isCurrentUser }: StoryCircleProps) {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={[styles.avatarContainer, hasUnviewed && styles.avatarContainerUnviewed]}>
-        <Image source={{ uri: userAvatar }} style={styles.avatar} />
-        {isCurrentUser && (
-          <View style={styles.addButton}>
-            <IconSymbol ios_icon_name="plus" android_material_icon_name="add" size={16} color={colors.text} />
+      {hasUnviewed ? (
+        <LinearGradient
+          colors={[colors.primary, colors.secondary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBorder}
+        >
+          <View style={styles.innerBorder}>
+            <Image source={{ uri: userAvatar }} style={styles.avatar} />
           </View>
-        )}
-      </View>
+        </LinearGradient>
+      ) : (
+        <View style={styles.avatarContainer}>
+          <Image source={{ uri: userAvatar }} style={styles.avatar} />
+        </View>
+      )}
+      {isCurrentUser && (
+        <View style={styles.addButton}>
+          <IconSymbol ios_icon_name="plus" android_material_icon_name="add" size={16} color={colors.background} />
+        </View>
+      )}
       <Text style={styles.username} numberOfLines={1}>
         {username}
       </Text>
@@ -36,28 +50,40 @@ const styles = StyleSheet.create({
     marginRight: 12,
     width: 72,
   },
+  gradientBorder: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    padding: 3,
+    marginBottom: 4,
+  },
+  innerBorder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 33,
+    padding: 3,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarContainer: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     padding: 3,
     backgroundColor: colors.border,
     marginBottom: 4,
-  },
-  avatarContainerUnviewed: {
-    background: `linear-gradient(45deg, ${colors.primary}, ${colors.secondary})`,
-    borderWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    borderWidth: 3,
-    borderColor: colors.card,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   addButton: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 20,
     right: 0,
     width: 24,
     height: 24,
@@ -66,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: colors.card,
+    borderColor: colors.background,
   },
   username: {
     fontSize: 12,

@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, Image, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
 
@@ -19,12 +20,26 @@ const mockUserPosts: UserPost[] = [
   { id: '6', imageUrl: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=400&h=400&fit=crop' },
 ];
 
+const { width } = Dimensions.get('window');
+const shelfWidth = (width - 48) / 3;
+
 export default function ProfileScreen() {
   const [posts] = useState<UserPost[]>(mockUserPosts);
-  const [activeTab, setActiveTab] = useState<'grid' | 'list'>('grid');
+  const [activeTab, setActiveTab] = useState<'shelf' | 'grid'>('shelf');
 
-  const renderGridItem = ({ item }: { item: UserPost }) => (
-    <TouchableOpacity style={styles.gridItem}>
+  const renderShelfItem = (item: UserPost, index: number) => (
+    <TouchableOpacity key={item.id} style={styles.shelfItem}>
+      <View style={styles.shelfPedestal}>
+        <View style={styles.pedestalTop} />
+        <View style={styles.pedestalBase} />
+      </View>
+      <Image source={{ uri: item.imageUrl }} style={styles.shelfImage} />
+      <View style={styles.shelfShadow} />
+    </TouchableOpacity>
+  );
+
+  const renderGridItem = (item: UserPost, index: number) => (
+    <TouchableOpacity key={item.id} style={styles.gridItem}>
       <Image source={{ uri: item.imageUrl }} style={styles.gridImage} />
     </TouchableOpacity>
   );
@@ -39,6 +54,7 @@ export default function ProfileScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.username}>@sneaker_vault_pro</Text>
           <TouchableOpacity>
@@ -46,50 +62,81 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.profileSection}>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop' }}
-            style={styles.avatar}
-          />
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>42</Text>
-              <Text style={styles.statLabel}>Posts</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>1.2K</Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>856</Text>
-              <Text style={styles.statLabel}>Following</Text>
+        {/* Profile Section with Gradient */}
+        <LinearGradient
+          colors={[colors.concrete, colors.background]}
+          style={styles.profileGradient}
+        >
+          <View style={styles.profileSection}>
+            <LinearGradient
+              colors={[colors.primary, colors.secondary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.avatarGradient}
+            >
+              <View style={styles.avatarInner}>
+                <Image
+                  source={{ uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop' }}
+                  style={styles.avatar}
+                />
+              </View>
+            </LinearGradient>
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>42</Text>
+                <Text style={styles.statLabel}>Posts</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>1.2K</Text>
+                <Text style={styles.statLabel}>Followers</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>856</Text>
+                <Text style={styles.statLabel}>Following</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.bioSection}>
-          <Text style={styles.displayName}>Sneaker Vault Pro</Text>
-          <Text style={styles.bio}>
-            🔥 Sneaker Collector & Enthusiast{'\n'}
-            👟 Building the ultimate collection{'\n'}
-            💰 Tracking value since 2020{'\n'}
-            📍 Los Angeles, CA
-          </Text>
-          <View style={styles.brandBadge}>
-            <Text style={styles.brandBadgeText}>Powered by Sneaker Vault</Text>
+          {/* Bio Section */}
+          <View style={styles.bioSection}>
+            <Text style={styles.displayName}>Sneaker Vault Pro</Text>
+            <Text style={styles.bio}>
+              🔥 Sneaker Collector & Enthusiast{'\n'}
+              👟 Building the ultimate collection{'\n'}
+              💰 Tracking value since 2020{'\n'}
+              📍 Los Angeles, CA
+            </Text>
+            <View style={styles.brandBadge}>
+              <IconSymbol ios_icon_name="checkmark.seal.fill" android_material_icon_name="verified" size={14} color={colors.background} />
+              <Text style={styles.brandBadgeText}>Verified Collector</Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shareButton}>
-            <Text style={styles.shareButtonText}>Share Profile</Text>
-          </TouchableOpacity>
-        </View>
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.editButton}>
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <IconSymbol ios_icon_name="square.and.arrow.up" android_material_icon_name="share" size={18} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
 
+        {/* Tab Bar */}
         <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'shelf' && styles.activeTab]}
+            onPress={() => setActiveTab('shelf')}
+          >
+            <IconSymbol
+              ios_icon_name="square.stack.3d.up.fill"
+              android_material_icon_name="view-carousel"
+              size={24}
+              color={activeTab === 'shelf' ? colors.primary : colors.textSecondary}
+            />
+            <Text style={[styles.tabLabel, activeTab === 'shelf' && styles.activeTabLabel]}>Shelf</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'grid' && styles.activeTab]}
             onPress={() => setActiveTab('grid')}
@@ -98,30 +145,22 @@ export default function ProfileScreen() {
               ios_icon_name="square.grid.3x3.fill"
               android_material_icon_name="grid-on"
               size={24}
-              color={activeTab === 'grid' ? colors.text : colors.textSecondary}
+              color={activeTab === 'grid' ? colors.primary : colors.textSecondary}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'list' && styles.activeTab]}
-            onPress={() => setActiveTab('list')}
-          >
-            <IconSymbol
-              ios_icon_name="list.bullet"
-              android_material_icon_name="view-list"
-              size={24}
-              color={activeTab === 'list' ? colors.text : colors.textSecondary}
-            />
+            <Text style={[styles.tabLabel, activeTab === 'grid' && styles.activeTabLabel]}>Grid</Text>
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={posts}
-          renderItem={renderGridItem}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          scrollEnabled={false}
-          contentContainerStyle={styles.gridContainer}
-        />
+        {/* Content */}
+        {activeTab === 'shelf' ? (
+          <View style={styles.shelfContainer}>
+            {posts.map((item, index) => renderShelfItem(item, index))}
+          </View>
+        ) : (
+          <View style={styles.gridContainer}>
+            {posts.map((item, index) => renderGridItem(item, index))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -154,17 +193,36 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
   },
+  profileGradient: {
+    paddingBottom: 16,
+  },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     marginBottom: 16,
+    marginTop: 8,
+  },
+  avatarGradient: {
+    width: 94,
+    height: 94,
+    borderRadius: 47,
+    padding: 3,
+    marginRight: 24,
+  },
+  avatarInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 44,
+    padding: 3,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    marginRight: 24,
+    width: 82,
+    height: 82,
+    borderRadius: 41,
   },
   statsContainer: {
     flex: 1,
@@ -201,6 +259,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   brandBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -213,11 +273,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.background,
     letterSpacing: 0.3,
+    marginLeft: 4,
   },
   actionButtons: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    marginBottom: 16,
     gap: 8,
   },
   editButton: {
@@ -235,42 +295,105 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   shareButton: {
-    flex: 1,
     backgroundColor: colors.card,
     borderRadius: 8,
     paddingVertical: 8,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-  },
-  shareButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
   },
   tabBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    marginBottom: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.card,
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: 'transparent',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
   },
   activeTab: {
-    borderBottomColor: colors.text,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primary,
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  activeTabLabel: {
+    color: colors.primary,
+  },
+  shelfContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    gap: 12,
+  },
+  shelfItem: {
+    width: shelfWidth,
+    height: shelfWidth + 40,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    position: 'relative',
+  },
+  shelfPedestal: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    alignItems: 'center',
+  },
+  pedestalTop: {
+    width: '90%',
+    height: 8,
+    backgroundColor: colors.cardElevated,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderColor: colors.border,
+  },
+  pedestalBase: {
+    width: '100%',
+    height: 32,
+    backgroundColor: colors.concrete,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  shelfImage: {
+    width: shelfWidth - 20,
+    height: shelfWidth - 20,
+    borderRadius: 8,
+    marginBottom: 8,
+    transform: [{ rotateY: '-15deg' }, { rotateX: '5deg' }],
+  },
+  shelfShadow: {
+    position: 'absolute',
+    bottom: 40,
+    width: '70%',
+    height: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 50,
+    opacity: 0.5,
   },
   gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 2,
   },
   gridItem: {
-    width: '33.33%',
-    aspectRatio: 1,
-    padding: 1,
+    width: (width - 4) / 3,
+    height: (width - 4) / 3,
   },
   gridImage: {
     width: '100%',

@@ -4,6 +4,7 @@ import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native
 import { useRouter, usePathname } from 'expo-router';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
+import { BlurView } from 'expo-blur';
 
 export interface TabBarItem {
   name: string;
@@ -29,30 +30,32 @@ export default function FloatingTabBar({ tabs }: FloatingTabBarProps) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabBar}>
-        {tabs.map((tab, index) => {
-          const active = isActive(tab.route);
-          return (
-            <TouchableOpacity
-              key={index}
-              style={styles.tab}
-              onPress={() => router.push(tab.route as any)}
-            >
-              <View style={[styles.iconContainer, active && styles.iconContainerActive]}>
-                <IconSymbol
-                  ios_icon_name={tab.icon}
-                  android_material_icon_name={tab.icon}
-                  size={24}
-                  color={active ? colors.text : colors.textSecondary}
-                />
-              </View>
-              <Text style={[styles.label, active && styles.labelActive]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
+        <View style={styles.tabBar}>
+          {tabs.map((tab, index) => {
+            const active = isActive(tab.route);
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.tab}
+                onPress={() => router.push(tab.route as any)}
+              >
+                <View style={[styles.iconContainer, active && styles.iconContainerActive]}>
+                  <IconSymbol
+                    ios_icon_name={tab.icon}
+                    android_material_icon_name={tab.icon}
+                    size={24}
+                    color={active ? colors.primary : colors.textSecondary}
+                  />
+                </View>
+                <Text style={[styles.label, active && styles.labelActive]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </BlurView>
     </View>
   );
 }
@@ -69,16 +72,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     pointerEvents: 'box-none',
   },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: colors.card,
+  blurContainer: {
     borderRadius: 24,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.6)',
-    elevation: 8,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
   },
   tab: {
     flex: 1,

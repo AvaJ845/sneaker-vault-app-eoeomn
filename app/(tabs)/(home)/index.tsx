@@ -1,17 +1,32 @@
 
-import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, ScrollView, Platform, Alert, Text } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, FlatList, StyleSheet, ScrollView, Platform, Alert, Text, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { colors } from '@/styles/commonStyles';
 import { StoryCircle } from '@/components/StoryCircle';
-import { PostCard } from '@/components/PostCard';
+import { ShoeboxCard } from '@/components/ShoeboxCard';
 import { mockPosts, mockStories } from '@/data/mockPosts';
 import { Post } from '@/types/post';
 import { StoryGroup } from '@/types/story';
 
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+
 export default function HomeScreen() {
   const [posts, setPosts] = useState<Post[]>(mockPosts);
   const [stories, setStories] = useState<StoryGroup[]>(mockStories);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const scrollY = useSharedValue(0);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Simulate refresh
+    setTimeout(() => {
+      console.log('Feed refreshed');
+      setRefreshing(false);
+    }, 1500);
+  }, []);
 
   const handleLike = (postId: string) => {
     console.log('Liked post:', postId);
@@ -41,6 +56,12 @@ export default function HomeScreen() {
     console.log('Add story');
     Alert.alert('Add Story', 'Story creation feature coming soon!');
   };
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
@@ -76,10 +97,10 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         {renderHeader()}
-        <FlatList
+        <AnimatedFlatList
           data={posts}
           renderItem={({ item }) => (
-            <PostCard
+            <ShoeboxCard
               post={item}
               onLike={handleLike}
               onComment={handleComment}
@@ -94,6 +115,16 @@ export default function HomeScreen() {
             styles.listContent,
             Platform.OS !== 'ios' && styles.listContentWithTabBar,
           ]}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary, colors.secondary]}
+            />
+          }
         />
       </View>
     </SafeAreaView>
@@ -140,6 +171,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+    paddingTop: 12,
   },
   listContentWithTabBar: {
     paddingBottom: 100,

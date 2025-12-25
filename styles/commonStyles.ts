@@ -1,25 +1,33 @@
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
-// Sneaker culture-inspired color palette - smooth, modern, streetwear vibes
+// Sneaker culture-inspired color palette - dark mode with purple/orange accents
 export const colors = {
-  // Dark mode primary (main background)
+  // Dark mode primary (industrial concrete backgrounds)
   background: '#0A0A0A',
   backgroundSecondary: '#141414',
+  concrete: '#1C1C1E',
   
-  // Card and surface colors
+  // Card and surface colors (shoebox inspired)
   card: '#1A1A1A',
   cardElevated: '#222222',
+  shoeboxLid: '#2C2C2E',
+  shoeboxBase: '#1C1C1E',
   
   // Text colors
   text: '#FFFFFF',
   textSecondary: '#A0A0A0',
   textTertiary: '#666666',
   
-  // Accent colors - inspired by sneaker colorways
-  primary: '#FF6B35', // Vibrant orange (like Nike's signature)
-  secondary: '#00D9FF', // Electric blue
+  // Accent colors - purple/orange sneaker culture
+  primary: '#FF6B35', // Vibrant orange
+  secondary: '#9D4EDD', // Purple accent
   accent: '#FFE66D', // Highlight yellow
+  
+  // Fire animation colors
+  fireOrange: '#FF6B35',
+  fireRed: '#FF3D00',
+  fireYellow: '#FFD600',
   
   // Status colors
   success: '#4ECCA3',
@@ -36,7 +44,7 @@ export const colors = {
   
   // Gradient colors for premium feel
   gradientStart: '#FF6B35',
-  gradientEnd: '#FF8E53',
+  gradientEnd: '#9D4EDD',
   
   // Light mode (for users who prefer it)
   lightBackground: '#F5F5F5',
@@ -64,7 +72,7 @@ export const buttonStyles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0px 4px 12px rgba(0, 217, 255, 0.3)',
+    boxShadow: '0px 4px 12px rgba(157, 78, 221, 0.3)',
     elevation: 4,
   },
   accent: {
