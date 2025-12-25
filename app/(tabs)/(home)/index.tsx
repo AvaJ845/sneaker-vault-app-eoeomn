@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, ScrollView, Platform, Alert } from 'react-native';
+import { View, FlatList, StyleSheet, ScrollView, Platform, Alert, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '@/styles/commonStyles';
 import { StoryCircle } from '@/components/StoryCircle';
@@ -42,6 +42,13 @@ export default function HomeScreen() {
     Alert.alert('Add Story', 'Story creation feature coming soon!');
   };
 
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      <Text style={styles.logo}>Sneaker Vault</Text>
+      <Text style={styles.tagline}>Track. Showcase. Connect.</Text>
+    </View>
+  );
+
   const renderStories = () => (
     <View style={styles.storiesContainer}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storiesScroll}>
@@ -68,6 +75,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
+        {renderHeader()}
         <FlatList
           data={posts}
           renderItem={({ item }) => (
@@ -100,6 +108,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  logo: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
+  tagline: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: 2,
+    letterSpacing: 0.5,
   },
   storiesContainer: {
     backgroundColor: colors.card,

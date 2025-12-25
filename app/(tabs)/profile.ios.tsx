@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Platform, Image, TouchableOpacity, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
@@ -37,7 +37,7 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.username}>sneaker_vault_pro</Text>
+          <Text style={styles.username}>@sneaker_vault_pro</Text>
           <TouchableOpacity>
             <IconSymbol ios_icon_name="line.3.horizontal" android_material_icon_name="menu" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -72,6 +72,9 @@ export default function ProfileScreen() {
             💰 Tracking value since 2020{'\n'}
             📍 Los Angeles, CA
           </Text>
+          <View style={styles.brandBadge}>
+            <Text style={styles.brandBadgeText}>Powered by Sneaker Vault</Text>
+          </View>
         </View>
 
         <View style={styles.actionButtons}>
@@ -189,6 +192,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     lineHeight: 20,
+    marginBottom: 8,
+  },
+  brandBadge: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  brandBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.background,
+    letterSpacing: 0.3,
   },
   actionButtons: {
     flexDirection: 'row',

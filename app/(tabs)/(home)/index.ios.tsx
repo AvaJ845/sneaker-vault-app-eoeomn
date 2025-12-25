@@ -1,43 +1,141 @@
-import React from "react";
-import { Stack } from "expo-router";
-import { FlatList, StyleSheet, View } from "react-native";
-import { useTheme } from "@react-navigation/native";
-import { modalDemos } from "@/components/homeData";
-import { DemoCard } from "@/components/DemoCard";
-import { HeaderRightButton, HeaderLeftButton } from "@/components/HeaderButtons";
+
+import React, { useState } from 'react';
+import { View, FlatList, StyleSheet, ScrollView, Platform, Alert, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@/styles/commonStyles';
+import { StoryCircle } from '@/components/StoryCircle';
+import { PostCard } from '@/components/PostCard';
+import { mockPosts, mockStories } from '@/data/mockPosts';
+import { Post } from '@/types/post';
+import { StoryGroup } from '@/types/story';
 
 export default function HomeScreen() {
-  const theme = useTheme();
+  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [stories, setStories] = useState<StoryGroup[]>(mockStories);
+
+  const handleLike = (postId: string) => {
+    console.log('Liked post:', postId);
+  };
+
+  const handleComment = (postId: string) => {
+    console.log('Comment on post:', postId);
+    Alert.alert('Comments', 'Comments feature coming soon!');
+  };
+
+  const handleShare = (postId: string) => {
+    console.log('Share post:', postId);
+    Alert.alert('Share', 'Share feature coming soon!');
+  };
+
+  const handleUserPress = (userId: string) => {
+    console.log('View user profile:', userId);
+    Alert.alert('Profile', 'User profile feature coming soon!');
+  };
+
+  const handleStoryPress = (userId: string) => {
+    console.log('View story:', userId);
+    Alert.alert('Story', 'Story viewer coming soon!');
+  };
+
+  const handleAddStory = () => {
+    console.log('Add story');
+    Alert.alert('Add Story', 'Story creation feature coming soon!');
+  };
+
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
+      <Text style={styles.logo}>Sneaker Vault</Text>
+      <Text style={styles.tagline}>Track. Showcase. Connect.</Text>
+    </View>
+  );
+
+  const renderStories = () => (
+    <View style={styles.storiesContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storiesScroll}>
+        <StoryCircle
+          username="Your Story"
+          userAvatar="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop"
+          hasUnviewed={false}
+          onPress={handleAddStory}
+          isCurrentUser={true}
+        />
+        {stories.map((storyGroup) => (
+          <StoryCircle
+            key={storyGroup.userId}
+            username={storyGroup.username}
+            userAvatar={storyGroup.userAvatar}
+            hasUnviewed={storyGroup.hasUnviewed}
+            onPress={() => handleStoryPress(storyGroup.userId)}
+          />
+        ))}
+      </ScrollView>
+    </View>
+  );
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Building the app...",
-          headerRight: () => <HeaderRightButton />,
-          headerLeft: () => <HeaderLeftButton />,
-        }}
-      />
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+        {renderHeader()}
         <FlatList
-          data={modalDemos}
-          renderItem={({ item }) => <DemoCard item={item} />}
-          keyExtractor={(item) => item.route}
-          contentContainerStyle={styles.listContainer}
-          contentInsetAdjustmentBehavior="automatic"
+          data={posts}
+          renderItem={({ item }) => (
+            <PostCard
+              post={item}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+              onUserPress={handleUserPress}
+            />
+          )}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderStories}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
         />
       </View>
-    </>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
-  listContainer: {
-    paddingVertical: 16,
+  headerContainer: {
     paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  logo: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
+  tagline: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
+  storiesContainer: {
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingVertical: 12,
+  },
+  storiesScroll: {
+    paddingHorizontal: 12,
+  },
+  listContent: {
+    paddingBottom: 20,
   },
 });

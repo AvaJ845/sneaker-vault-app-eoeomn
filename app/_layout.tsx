@@ -1,3 +1,4 @@
+
 import "react-native-reanimated";
 import React, { useEffect } from "react";
 import { useFonts } from "expo-font";
@@ -20,7 +21,7 @@ import { WidgetProvider } from "@/contexts/WidgetContext";
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  initialRouteName: "(tabs)", // Ensure any route can link back to `/`
+  initialRouteName: "(tabs)",
 };
 
 export default function RootLayout() {
@@ -43,7 +44,7 @@ export default function RootLayout() {
     ) {
       Alert.alert(
         "🔌 You are offline",
-        "You can keep using the app! Your changes will be saved locally and synced when you are back online."
+        "You can keep using Sneaker Vault! Your changes will be saved locally and synced when you are back online."
       );
     }
   }, [networkState.isConnected, networkState.isInternetReachable]);
@@ -56,24 +57,24 @@ export default function RootLayout() {
     ...DefaultTheme,
     dark: false,
     colors: {
-      primary: "rgb(0, 122, 255)", // System Blue
-      background: "rgb(242, 242, 247)", // Light mode background
-      card: "rgb(255, 255, 255)", // White cards/surfaces
-      text: "rgb(0, 0, 0)", // Black text for light mode
-      border: "rgb(216, 216, 220)", // Light gray for separators/borders
-      notification: "rgb(255, 59, 48)", // System Red
+      primary: "rgb(255, 107, 53)",
+      background: "rgb(245, 245, 245)",
+      card: "rgb(255, 255, 255)",
+      text: "rgb(10, 10, 10)",
+      border: "rgb(224, 224, 224)",
+      notification: "rgb(255, 107, 53)",
     },
   };
 
   const CustomDarkTheme: Theme = {
     ...DarkTheme,
     colors: {
-      primary: "rgb(10, 132, 255)", // System Blue (Dark Mode)
-      background: "rgb(1, 1, 1)", // True black background for OLED displays
-      card: "rgb(28, 28, 30)", // Dark card/surface color
-      text: "rgb(255, 255, 255)", // White text for dark mode
-      border: "rgb(44, 44, 46)", // Dark gray for separators/borders
-      notification: "rgb(255, 69, 58)", // System Red (Dark Mode)
+      primary: "rgb(255, 107, 53)",
+      background: "rgb(10, 10, 10)",
+      card: "rgb(26, 26, 26)",
+      text: "rgb(255, 255, 255)",
+      border: "rgb(42, 42, 42)",
+      notification: "rgb(255, 107, 53)",
     },
   };
   return (
@@ -85,22 +86,19 @@ export default function RootLayout() {
           <WidgetProvider>
             <GestureHandlerRootView>
             <Stack>
-              {/* Main app with tabs */}
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-              {/* Modal Demo Screens */}
               <Stack.Screen
                 name="modal"
                 options={{
                   presentation: "modal",
-                  title: "Standard Modal",
+                  title: "Sneaker Vault",
                 }}
               />
               <Stack.Screen
                 name="formsheet"
                 options={{
                   presentation: "formSheet",
-                  title: "Form Sheet Modal",
+                  title: "Sneaker Vault",
                   sheetGrabberVisible: true,
                   sheetAllowedDetents: [0.5, 0.8, 1.0],
                   sheetCornerRadius: 20,
