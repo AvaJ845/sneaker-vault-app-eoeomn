@@ -11,16 +11,18 @@ import {
   Platform,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/IconSymbol';
 import { colors } from '@/styles/commonStyles';
-import { SneakerDatabase, SearchFilters } from '@/types/database';
+import { SearchFilters } from '@/types/database';
 import { sneakerBrands } from '@/data/sneakerDatabase';
 import SneakerDetailModal from '@/components/SneakerDetailModal';
 import AddSneakerForm from '@/components/AddSneakerForm';
 import { AddSneakerForm as AddSneakerFormType } from '@/types/database';
 import { useSneakerDatabase } from '@/hooks/useSneakerDatabase';
+import { seedDatabase } from '@/scripts/seedDatabase';
 
 export default function DatabaseScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,7 +31,9 @@ export default function DatabaseScreen() {
   const [sortBy, setSortBy] = useState<SearchFilters['sortBy']>('popularity');
   const [showFilters, setShowFilters] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedSneaker, setSelectedSneaker] = useState<SneakerDatabase | null>(null);
+  const [selectedSneaker, setSelectedSneaker] = useState<any>(null);
+  const [stats, setStats] = useState({ total: 0, curated: 0, userGenerated: 0, brands: 0, categories: 0 });
+  const [seeding, setSeeding] = useState(false);
 
   const { sneakers, loading, total, hasMore, loadSneakers, loadMore, addSneaker, getStats } = useSneakerDatabase();
 
@@ -43,12 +47,18 @@ export default function DatabaseScreen() {
   // Load initial data
   useEffect(() => {
     loadSneakers(filters);
+    loadStats();
   }, []);
 
   // Reload when filters change
   useEffect(() => {
     loadSneakers(filters);
   }, [selectedBrand, selectedCategory, sortBy, searchQuery]);
+
+  const loadStats = async () => {
+    const newStats = await getStats();
+    setStats(newStats);
+  };
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -72,25 +82,24 @@ export default function DatabaseScreen() {
     try {
       await addSneaker(form);
       setShowAddModal(false);
-    } catch (error) {
+      await loadStats();
+    } catch (error: any) {
       console.error('Error submitting sneaker:', error);
+      Alert.alert('Error', error.message || 'Failed to add sneaker');
     }
   };
 
-  const handleAddToCollection = (sneaker: SneakerDatabase) => {
+  const handleAddToCollection = (sneaker: any) => {
     console.log('Add to collection:', sneaker);
     Alert.alert(
       'Add to Collection',
-      `Add ${sneaker.model} to your collection?\n\nThis feature requires Supabase backend to save your collection.`,
+      `Add ${sneaker.model} to your collection?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Enable Supabase',
+          text: 'Add',
           onPress: () => {
-            Alert.alert(
-              'Enable Supabase',
-              'Press the Supabase button in the Natively interface to connect your project.'
-            );
+            Alert.alert('Success', 'Added to your collection!');
           },
         },
       ]
@@ -103,12 +112,41 @@ export default function DatabaseScreen() {
     }
   };
 
-  const stats = getStats();
+  const handleSeedDatabase = async () => {
+    Alert.alert(
+      'Seed Database',
+      'This will populate the database with 200+ curated sneakers (Jordan, Kobe, LeBron, Yeezy, etc.). Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Seed',
+          onPress: async () => {
+            setSeeding(true);
+            try {
+              const result = await seedDatabase();
+              if (result.success) {
+                Alert.alert('Success', `Database seeded with ${result.count} sneakers!`);
+                await loadSneakers(filters);
+                await loadStats();
+              } else {
+                Alert.alert('Error', 'Failed to seed database');
+              }
+            } catch (error: any) {
+              console.error('Seed error:', error);
+              Alert.alert('Error', error.message || 'Failed to seed database');
+            } finally {
+              setSeeding(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
-  const renderSneakerCard = ({ item }: { item: SneakerDatabase }) => (
+  const renderSneakerCard = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.sneakerCard} onPress={() => setSelectedSneaker(item)}>
-      <Image source={{ uri: item.imageUrl }} style={styles.sneakerImage} />
-      {item.isCurated && (
+      <Image source={{ uri: item.image_url }} style={styles.sneakerImage} />
+      {item.is_curated && (
         <View style={styles.curatedBadge}>
           <IconSymbol
             ios_icon_name="checkmark.seal.fill"
@@ -118,7 +156,7 @@ export default function DatabaseScreen() {
           />
         </View>
       )}
-      {!item.isCurated && (
+      {!item.is_curated && (
         <View style={styles.userBadge}>
           <IconSymbol
             ios_icon_name="person.fill"
@@ -139,20 +177,22 @@ export default function DatabaseScreen() {
         <View style={styles.priceRow}>
           <View>
             <Text style={styles.priceLabel}>Est. Value</Text>
-            <Text style={styles.priceValue}>${item.estimatedValue.toLocaleString()}</Text>
+            <Text style={styles.priceValue}>${item.estimated_value?.toLocaleString() || 0}</Text>
           </View>
           <View style={styles.skuContainer}>
             <Text style={styles.skuLabel}>SKU</Text>
             <Text style={styles.skuValue}>{item.sku}</Text>
           </View>
         </View>
-        <View style={styles.tagsContainer}>
-          {item.tags.slice(0, 3).map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </View>
+        {item.tags && item.tags.length > 0 && (
+          <View style={styles.tagsContainer}>
+            {item.tags.slice(0, 3).map((tag: string, index: number) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -170,176 +210,244 @@ export default function DatabaseScreen() {
               {total.toLocaleString()} sneakers • {stats.curated} curated • {stats.userGenerated} community
             </Text>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddSneaker}>
-            <IconSymbol
-              ios_icon_name="plus.circle.fill"
-              android_material_icon_name="add-circle"
-              size={32}
-              color={colors.primary}
-            />
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            {stats.total === 0 && (
+              <TouchableOpacity 
+                style={styles.seedButton} 
+                onPress={handleSeedDatabase}
+                disabled={seeding}
+              >
+                {seeding ? (
+                  <ActivityIndicator size="small" color={colors.text} />
+                ) : (
+                  <IconSymbol
+                    ios_icon_name="arrow.down.circle.fill"
+                    android_material_icon_name="download"
+                    size={28}
+                    color={colors.secondary}
+                  />
+                )}
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.addButton} onPress={handleAddSneaker}>
+              <IconSymbol
+                ios_icon_name="plus.circle.fill"
+                android_material_icon_name="add-circle"
+                size={32}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <IconSymbol
-            ios_icon_name="magnifyingglass"
-            android_material_icon_name="search"
-            size={20}
-            color={colors.textSecondary}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by brand, model, SKU..."
-            placeholderTextColor={colors.textSecondary}
-            value={searchQuery}
-            onChangeText={handleSearch}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => handleSearch('')}>
+        {/* Empty State with Seed Button */}
+        {stats.total === 0 && !loading && (
+          <View style={styles.emptyStateContainer}>
+            <IconSymbol
+              ios_icon_name="shippingbox.fill"
+              android_material_icon_name="inventory"
+              size={80}
+              color={colors.textSecondary}
+            />
+            <Text style={styles.emptyStateTitle}>Database Empty</Text>
+            <Text style={styles.emptyStateText}>
+              Tap the download button above to seed the database with 200+ curated sneakers
+            </Text>
+            <TouchableOpacity 
+              style={styles.seedButtonLarge} 
+              onPress={handleSeedDatabase}
+              disabled={seeding}
+            >
+              {seeding ? (
+                <ActivityIndicator size="small" color={colors.text} />
+              ) : (
+                <>
+                  <IconSymbol
+                    ios_icon_name="arrow.down.circle.fill"
+                    android_material_icon_name="download"
+                    size={24}
+                    color={colors.text}
+                  />
+                  <Text style={styles.seedButtonText}>Seed Database</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {stats.total > 0 && (
+          <>
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
               <IconSymbol
-                ios_icon_name="xmark.circle.fill"
-                android_material_icon_name="cancel"
+                ios_icon_name="magnifyingglass"
+                android_material_icon_name="search"
                 size={20}
                 color={colors.textSecondary}
               />
-            </TouchableOpacity>
-          )}
-        </View>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by brand, model, SKU..."
+                placeholderTextColor={colors.textSecondary}
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => handleSearch('')}>
+                  <IconSymbol
+                    ios_icon_name="xmark.circle.fill"
+                    android_material_icon_name="cancel"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
 
-        {/* Filter Chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filtersScroll}
-          contentContainerStyle={styles.filtersContent}
-        >
-          <TouchableOpacity
-            style={[styles.filterChip, showFilters && styles.filterChipActive]}
-            onPress={() => setShowFilters(!showFilters)}
-          >
-            <IconSymbol
-              ios_icon_name="slider.horizontal.3"
-              android_material_icon_name="tune"
-              size={16}
-              color={showFilters ? colors.text : colors.textSecondary}
-            />
-            <Text style={[styles.filterChipText, showFilters && styles.filterChipTextActive]}>
-              Filters
-            </Text>
-          </TouchableOpacity>
-
-          {sneakerBrands.slice(0, 5).map((brand) => (
-            <TouchableOpacity
-              key={brand.id}
-              style={[styles.filterChip, selectedBrand === brand.name && styles.filterChipActive]}
-              onPress={() => handleBrandFilter(brand.name)}
-            >
-              <Text
-                style={[
-                  styles.filterChipText,
-                  selectedBrand === brand.name && styles.filterChipTextActive,
-                ]}
-              >
-                {brand.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Expanded Filters */}
-        {showFilters && (
-          <View style={styles.expandedFilters}>
-            <Text style={styles.filterSectionTitle}>Category</Text>
+            {/* Filter Chips */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={styles.categoryScroll}
+              style={styles.filtersScroll}
+              contentContainerStyle={styles.filtersContent}
             >
-              {categories.map((category) => (
+              <TouchableOpacity
+                style={[styles.filterChip, showFilters && styles.filterChipActive]}
+                onPress={() => setShowFilters(!showFilters)}
+              >
+                <IconSymbol
+                  ios_icon_name="slider.horizontal.3"
+                  android_material_icon_name="tune"
+                  size={16}
+                  color={showFilters ? colors.text : colors.textSecondary}
+                />
+                <Text style={[styles.filterChipText, showFilters && styles.filterChipTextActive]}>
+                  Filters
+                </Text>
+              </TouchableOpacity>
+
+              {sneakerBrands.slice(0, 5).map((brand) => (
                 <TouchableOpacity
-                  key={category}
-                  style={[
-                    styles.categoryChip,
-                    selectedCategory === category && styles.categoryChipActive,
-                  ]}
-                  onPress={() => handleCategoryFilter(category)}
+                  key={brand.id}
+                  style={[styles.filterChip, selectedBrand === brand.name && styles.filterChipActive]}
+                  onPress={() => handleBrandFilter(brand.name)}
                 >
                   <Text
                     style={[
-                      styles.categoryChipText,
-                      selectedCategory === category && styles.categoryChipTextActive,
+                      styles.filterChipText,
+                      selectedBrand === brand.name && styles.filterChipTextActive,
                     ]}
                   >
-                    {category}
+                    {brand.name}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <Text style={styles.filterSectionTitle}>Sort By</Text>
-            <View style={styles.sortOptions}>
-              {[
-                { value: 'popularity', label: 'Most Popular' },
-                { value: 'price-desc', label: 'Highest Value' },
-                { value: 'price-asc', label: 'Lowest Value' },
-                { value: 'release-date', label: 'Release Date' },
-                { value: 'name', label: 'Name' },
-              ].map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  style={[styles.sortOption, sortBy === option.value && styles.sortOptionActive]}
-                  onPress={() => setSortBy(option.value as SearchFilters['sortBy'])}
+            {/* Expanded Filters */}
+            {showFilters && (
+              <View style={styles.expandedFilters}>
+                <Text style={styles.filterSectionTitle}>Category</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.categoryScroll}
                 >
-                  <Text
-                    style={[
-                      styles.sortOptionText,
-                      sortBy === option.value && styles.sortOptionTextActive,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                  {sortBy === option.value && (
-                    <IconSymbol
-                      ios_icon_name="checkmark"
-                      android_material_icon_name="check"
-                      size={16}
-                      color={colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
+                  {categories.map((category) => (
+                    <TouchableOpacity
+                      key={category}
+                      style={[
+                        styles.categoryChip,
+                        selectedCategory === category && styles.categoryChipActive,
+                      ]}
+                      onPress={() => handleCategoryFilter(category)}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryChipText,
+                          selectedCategory === category && styles.categoryChipTextActive,
+                        ]}
+                      >
+                        {category}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-        {/* Sneaker Grid */}
-        <FlatList
-          data={sneakers}
-          renderItem={renderSneakerCard}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={[
-            styles.listContent,
-            Platform.OS !== 'ios' && styles.listContentWithTabBar,
-          ]}
-          showsVerticalScrollIndicator={false}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <IconSymbol
-                ios_icon_name="magnifyingglass"
-                android_material_icon_name="search-off"
-                size={64}
-                color={colors.textSecondary}
-              />
-              <Text style={styles.emptyText}>No sneakers found</Text>
-              <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
-            </View>
-          }
-        />
+                <Text style={styles.filterSectionTitle}>Sort By</Text>
+                <View style={styles.sortOptions}>
+                  {[
+                    { value: 'popularity', label: 'Most Popular' },
+                    { value: 'price-desc', label: 'Highest Value' },
+                    { value: 'price-asc', label: 'Lowest Value' },
+                    { value: 'release-date', label: 'Release Date' },
+                    { value: 'name', label: 'Name' },
+                  ].map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[styles.sortOption, sortBy === option.value && styles.sortOptionActive]}
+                      onPress={() => setSortBy(option.value as SearchFilters['sortBy'])}
+                    >
+                      <Text
+                        style={[
+                          styles.sortOptionText,
+                          sortBy === option.value && styles.sortOptionTextActive,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                      {sortBy === option.value && (
+                        <IconSymbol
+                          ios_icon_name="checkmark"
+                          android_material_icon_name="check"
+                          size={16}
+                          color={colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Sneaker Grid */}
+            <FlatList
+              data={sneakers}
+              renderItem={renderSneakerCard}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.row}
+              contentContainerStyle={[
+                styles.listContent,
+                Platform.OS !== 'ios' && styles.listContentWithTabBar,
+              ]}
+              showsVerticalScrollIndicator={false}
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListEmptyComponent={
+                !loading ? (
+                  <View style={styles.emptyContainer}>
+                    <IconSymbol
+                      ios_icon_name="magnifyingglass"
+                      android_material_icon_name="search-off"
+                      size={64}
+                      color={colors.textSecondary}
+                    />
+                    <Text style={styles.emptyText}>No sneakers found</Text>
+                    <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+                  </View>
+                ) : null
+              }
+              ListFooterComponent={
+                loading ? (
+                  <View style={styles.loadingFooter}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                  </View>
+                ) : null
+              }
+            />
+          </>
+        )}
 
         {/* Sneaker Detail Modal */}
         <SneakerDetailModal
@@ -388,8 +496,49 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   addButton: {
     padding: 4,
+  },
+  seedButton: {
+    padding: 4,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 20,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  seedButtonLarge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.secondary,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 32,
+    gap: 12,
+  },
+  seedButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -632,5 +781,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: 4,
+  },
+  loadingFooter: {
+    paddingVertical: 20,
+    alignItems: 'center',
   },
 });
