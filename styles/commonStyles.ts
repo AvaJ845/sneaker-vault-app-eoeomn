@@ -1,5 +1,5 @@
 
-import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet, ViewStyle, TextStyle, Platform } from 'react-native';
 
 // Sneaker culture-inspired color palette - dark mode with purple/orange accents
 export const colors = {
