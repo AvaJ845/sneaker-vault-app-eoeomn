@@ -99,13 +99,15 @@ export default function HomeScreen() {
         {renderHeader()}
         <AnimatedFlatList
           data={posts}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <ShoeboxCard
               post={item}
               onLike={handleLike}
               onComment={handleComment}
               onShare={handleShare}
               onUserPress={handleUserPress}
+              scrollY={scrollY}
+              index={index}
             />
           )}
           keyExtractor={(item) => item.id}
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   listContent: {
-    paddingBottom: 120,
+    paddingBottom: 20,
     paddingTop: 12,
   },
 });

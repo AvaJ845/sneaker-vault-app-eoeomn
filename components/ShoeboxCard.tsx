@@ -6,7 +6,8 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  runOnJS,
+  interpolate,
+  Extrapolate,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -20,18 +21,28 @@ interface ShoeboxCardProps {
   onComment: (postId: string) => void;
   onShare: (postId: string) => void;
   onUserPress: (userId: string) => void;
+  scrollY?: Animated.SharedValue<number>;
+  index?: number;
 }
 
 const { width } = Dimensions.get('window');
+const CARD_HEIGHT = width + 200; // Approximate card height
 
-export function ShoeboxCard({ post, onLike, onComment, onShare, onUserPress }: ShoeboxCardProps) {
+export function ShoeboxCard({ 
+  post, 
+  onLike, 
+  onComment, 
+  onShare, 
+  onUserPress,
+  scrollY,
+  index = 0,
+}: ShoeboxCardProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likes);
   const [showFireAnimation, setShowFireAnimation] = useState(false);
   const [lastTap, setLastTap] = useState(0);
 
   const scale = useSharedValue(1);
-  const elevation = useSharedValue(4);
 
   const handleDoubleTap = () => {
     const now = Date.now();
@@ -89,15 +100,93 @@ export function ShoeboxCard({ post, onLike, onComment, onShare, onUserPress }: S
     }
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  // 3D depth and tilt animation based on scroll position
+  const animatedStyle = useAnimatedStyle(() => {
+    if (!scrollY) {
+      return {
+        transform: [{ scale: scale.value }],
+      };
+    }
+
+    // Calculate card position in viewport
+    const cardOffset = index * (CARD_HEIGHT + 24); // 24 is marginBottom
+    const inputRange = [
+      cardOffset - CARD_HEIGHT,
+      cardOffset,
+      cardOffset + CARD_HEIGHT,
+    ];
+
+    // Subtle tilt effect based on scroll position
+    const rotateX = interpolate(
+      scrollY.value,
+      inputRange,
+      [2, 0, -2],
+      Extrapolate.CLAMP
+    );
+
+    const rotateY = interpolate(
+      scrollY.value,
+      inputRange,
+      [-1, 0, 1],
+      Extrapolate.CLAMP
+    );
+
+    // Slight scale effect for depth
+    const scaleValue = interpolate(
+      scrollY.value,
+      inputRange,
+      [0.98, 1, 0.98],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [
+        { perspective: 1000 },
+        { rotateX: `${rotateX}deg` },
+        { rotateY: `${rotateY}deg` },
+        { scale: scale.value * scaleValue },
+      ],
+    };
+  });
+
+  // Layered shadow animation
+  const shadowStyle = useAnimatedStyle(() => {
+    if (!scrollY) {
+      return {};
+    }
+
+    const cardOffset = index * (CARD_HEIGHT + 24);
+    const inputRange = [
+      cardOffset - CARD_HEIGHT / 2,
+      cardOffset,
+      cardOffset + CARD_HEIGHT / 2,
+    ];
+
+    // Shadow intensity increases when card is centered
+    const shadowOpacity = interpolate(
+      scrollY.value,
+      inputRange,
+      [0.3, 0.6, 0.3],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      shadowOpacity,
+    };
+  });
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
+      {/* Multiple shadow layers for depth */}
+      <Animated.View style={[styles.shadowLayer1, shadowStyle]} />
+      <Animated.View style={[styles.shadowLayer2, shadowStyle]} />
+      <Animated.View style={[styles.shadowLayer3, shadowStyle]} />
+
       {/* Shoebox Lid */}
       <View style={styles.shoeboxLid}>
         <View style={styles.lidStripe} />
+        <View style={styles.lidDetail1} />
+        <View style={styles.lidDetail2} />
       </View>
 
       {/* Shoebox Base */}
@@ -178,26 +267,77 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 24,
     marginHorizontal: 12,
+    position: 'relative',
+  },
+  // Layered shadow system for 3D depth
+  shadowLayer1: {
+    position: 'absolute',
+    top: 12,
+    left: 4,
+    right: 4,
+    bottom: -12,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 14,
+    zIndex: -3,
+  },
+  shadowLayer2: {
+    position: 'absolute',
+    top: 8,
+    left: 2,
+    right: 2,
+    bottom: -8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 13,
+    zIndex: -2,
+  },
+  shadowLayer3: {
+    position: 'absolute',
+    top: 4,
+    left: 1,
+    right: 1,
+    bottom: -4,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 12,
+    zIndex: -1,
   },
   shoeboxLid: {
     backgroundColor: colors.shoeboxLid,
-    height: 8,
+    height: 12,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
     borderWidth: 1,
     borderBottomWidth: 0,
     borderColor: colors.border,
     position: 'relative',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.4)',
+    elevation: 3,
   },
   lidStripe: {
     position: 'absolute',
-    top: 2,
+    top: 4,
     left: '10%',
     right: '10%',
     height: 2,
     backgroundColor: colors.primary,
     borderRadius: 1,
+  },
+  lidDetail1: {
+    position: 'absolute',
+    top: 2,
+    left: '5%',
+    width: 20,
+    height: 1,
+    backgroundColor: colors.secondary,
+    opacity: 0.6,
+  },
+  lidDetail2: {
+    position: 'absolute',
+    top: 2,
+    right: '5%',
+    width: 20,
+    height: 1,
+    backgroundColor: colors.secondary,
+    opacity: 0.6,
   },
   shoeboxBase: {
     backgroundColor: colors.shoeboxBase,
@@ -207,14 +347,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.6)',
-    elevation: 8,
+    boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.7)',
+    elevation: 10,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
+    backgroundColor: 'rgba(28, 28, 30, 0.95)',
   },
   userInfo: {
     flexDirection: 'row',
@@ -227,6 +368,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 2,
     borderColor: colors.secondary,
+    boxShadow: '0px 2px 8px rgba(157, 78, 221, 0.4)',
   },
   username: {
     fontSize: 14,
@@ -253,7 +395,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(28, 28, 30, 0.95)',
   },
   leftActions: {
     flexDirection: 'row',
@@ -264,12 +407,13 @@ const styles = StyleSheet.create({
   },
   info: {
     paddingHorizontal: 12,
-    paddingBottom: 12,
+    paddingBottom: 14,
+    backgroundColor: 'rgba(28, 28, 30, 0.95)',
   },
   likesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   likes: {
     fontSize: 14,
@@ -278,7 +422,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   captionContainer: {
-    marginBottom: 4,
+    marginBottom: 6,
   },
   caption: {
     fontSize: 14,
@@ -288,7 +432,7 @@ const styles = StyleSheet.create({
   viewComments: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   timestamp: {
     fontSize: 12,

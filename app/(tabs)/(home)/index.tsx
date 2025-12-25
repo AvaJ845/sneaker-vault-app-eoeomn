@@ -99,13 +99,15 @@ export default function HomeScreen() {
         {renderHeader()}
         <AnimatedFlatList
           data={posts}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <ShoeboxCard
               post={item}
               onLike={handleLike}
               onComment={handleComment}
               onShare={handleShare}
               onUserPress={handleUserPress}
+              scrollY={scrollY}
+              index={index}
             />
           )}
           keyExtractor={(item) => item.id}
