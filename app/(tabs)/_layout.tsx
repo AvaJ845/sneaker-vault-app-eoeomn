@@ -30,12 +30,6 @@ export default function TabLayout() {
       label: 'Vault',
     },
     {
-      name: 'messages',
-      route: '/(tabs)/messages',
-      icon: 'message',
-      label: 'Messages',
-    },
-    {
       name: 'analytics',
       route: '/(tabs)/analytics',
       icon: 'chart',
@@ -62,7 +56,6 @@ export default function TabLayout() {
         <Stack.Screen key="analytics" name="analytics" />
         <Stack.Screen key="marketplace" name="marketplace" />
         <Stack.Screen key="profile" name="profile" />
-        <Stack.Screen key="messages" name="messages" />
       </Stack>
       <FloatingTabBar tabs={tabs} />
     </>
