@@ -18,10 +18,10 @@ export default function TabLayout() {
       label: 'Drops',
     },
     {
-      name: 'database',
-      route: '/(tabs)/database',
-      icon: 'shelf',
-      label: 'Database',
+      name: 'organize',
+      route: '/(tabs)/organize',
+      icon: 'grid',
+      label: 'Organize',
     },
     {
       name: 'collection',
@@ -30,18 +30,11 @@ export default function TabLayout() {
       label: 'Vault',
     },
     {
-      name: 'wishlist',
-      route: '/(tabs)/wishlist',
-      icon: 'star',
-      label: 'Wishlist',
-    },
-    {
       name: 'analytics',
       route: '/(tabs)/analytics',
       icon: 'chart',
       label: 'Analytics',
     },
-    
   ];
 
   return (
@@ -56,6 +49,7 @@ export default function TabLayout() {
         <Stack.Screen key="reels" name="reels" />
         <Stack.Screen key="drops" name="drops" />
         <Stack.Screen key="database" name="database" />
+        <Stack.Screen key="organize" name="organize" />
         <Stack.Screen key="collection" name="collection" />
         <Stack.Screen key="wishlist" name="wishlist" />
         <Stack.Screen key="analytics" name="analytics" />
