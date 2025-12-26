@@ -1,28 +1,61 @@
 
 import React from 'react';
-import { Tabs } from 'expo-router/unstable-native-tabs';
 import { colors } from '@/styles/commonStyles';
+import { 
+  FlameIcon, 
+  FeedIcon, 
+  ShelfIcon, 
+  PriceTagIcon, 
+  SneakerRotateIcon,
+  VaultIcon
+} from '@/components/CustomIcons';
 import { IconSymbol } from '@/components/IconSymbol';
 
+// Try to import Tabs with error handling
+let Tabs: any;
+try {
+  const expoRouterTabs = require('expo-router/unstable-native-tabs');
+  Tabs = expoRouterTabs.Tabs;
+  console.log('✅ Successfully imported Tabs from expo-router/unstable-native-tabs');
+} catch (error) {
+  console.error('❌ Failed to import Tabs:', error);
+  // Fallback to regular expo-router if unstable-native-tabs fails
+  const expoRouter = require('expo-router');
+  Tabs = expoRouter.Tabs;
+  console.log('⚠️ Using fallback Tabs from expo-router');
+}
+
 export default function TabLayout() {
+  console.log('iOS TabLayout rendering, Tabs:', typeof Tabs);
+  
+  if (!Tabs) {
+    console.error('❌ Tabs is undefined!');
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
-        },
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: 'rgba(26, 26, 26, 0.95)',
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: 24,
+          height: 88,
+          boxShadow: '0px -4px 20px rgba(0, 0, 0, 0.6)',
+        },
       }}
     >
       <Tabs.Screen
         name="(home)"
         options={{
           title: 'Feed',
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol ios_icon_name="house.fill" android_material_icon_name="home" size={size} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <FeedIcon size={26} color={color} />
           ),
         }}
       />
@@ -30,17 +63,17 @@ export default function TabLayout() {
         name="drops"
         options={{
           title: 'Drops',
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol ios_icon_name="flame.fill" android_material_icon_name="whatshot" size={size} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <FlameIcon size={26} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="organize"
+        name="database"
         options={{
-          title: 'Organize',
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol ios_icon_name="square.grid.2x2.fill" android_material_icon_name="grid_view" size={size} color={color} />
+          title: 'Database',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <ShelfIcon size={26} color={color} />
           ),
         }}
       />
@@ -48,8 +81,22 @@ export default function TabLayout() {
         name="collection"
         options={{
           title: 'Vault',
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol ios_icon_name="shippingbox.fill" android_material_icon_name="inventory_2" size={size} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <VaultIcon size={26} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          title: 'Wishlist',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol
+              ios_icon_name="star"
+              android_material_icon_name="star-border"
+              size={26}
+              color={color}
+            />
           ),
         }}
       />
@@ -57,27 +104,32 @@ export default function TabLayout() {
         name="analytics"
         options={{
           title: 'Analytics',
-          tabBarIcon: ({ color, size }) => (
-            <IconSymbol ios_icon_name="chart.bar.fill" android_material_icon_name="bar_chart" size={size} color={color} />
+          tabBarIcon: ({ color }: { color: string }) => (
+            <IconSymbol
+              ios_icon_name="chart.bar.xaxis"
+              android_material_icon_name="bar-chart"
+              size={26}
+              color={color}
+            />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="database"
-        options={{
-          href: null,
         }}
       />
       <Tabs.Screen
         name="marketplace"
         options={{
-          href: null,
+          title: 'Market',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <PriceTagIcon size={26} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          href: null,
+          title: 'Profile',
+          tabBarIcon: ({ color }: { color: string }) => (
+            <SneakerRotateIcon size={26} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -88,12 +140,6 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="upload"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="wishlist"
         options={{
           href: null,
         }}
